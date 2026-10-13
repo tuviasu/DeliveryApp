@@ -83,7 +83,7 @@
 
                     <DataGridTextColumn Header="Delivery ID"
                                         Binding="{Binding DeliveryID}"
-                                        Width="120">
+                                        Width="0.9*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextAlignment" Value="Center"/>
@@ -93,7 +93,7 @@
 
                     <DataGridTextColumn Header="Order ID"
                                         Binding="{Binding OrderID}"
-                                        Width="120">
+                                        Width="0.8*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextAlignment" Value="Center"/>
@@ -103,7 +103,7 @@
 
                     <DataGridTextColumn Header="Order Type"
                                         Binding="{Binding orderType}"
-                                        Width="140">
+                                        Width="*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextAlignment" Value="Center"/>
@@ -113,7 +113,8 @@
 
                     <DataGridTextColumn Header="Address"
                                         Binding="{Binding FullAddress}"
-                                        Width="3*">
+                                        Width="2*"
+                                        MinWidth="160">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextAlignment" Value="Left"/>
@@ -123,7 +124,7 @@
 
                     <DataGridTextColumn Header="Delivery Type"
                                         Binding="{Binding deliveryType}"
-                                        Width="150">
+                                        Width="*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextAlignment" Value="Center"/>
@@ -133,7 +134,7 @@
 
                     <DataGridTextColumn Header="Result"
                                         Binding="{Binding deliveryDoneType}"
-                                        Width="150">
+                                        Width="*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextAlignment" Value="Center"/>
@@ -141,9 +142,9 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Handling Time (min)"
+                    <DataGridTextColumn Header="Handling Time"
                                         Binding="{Binding TotalHandlingTime}"
-                                        Width="180">
+                                        Width="1.2*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextAlignment" Value="Center"/>

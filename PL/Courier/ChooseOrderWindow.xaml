@@ -83,27 +83,28 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Order ID"
                                         Binding="{Binding OrderID}"
-                                        Width="110"/>
+                                        Width="0.8*"/>
 
                     <DataGridTextColumn Header="Type"
                                         Binding="{Binding orderType}"
-                                        Width="130"/>
+                                        Width="*"/>
 
                     <DataGridTextColumn Header="Address"
                                         Binding="{Binding FullAddress}"
-                                        Width="3*"/>
+                                        Width="2*"
+                                        MinWidth="160"/>
 
                     <DataGridTextColumn Header="Air Distance (km)"
-                                        Binding="{Binding AirDistance}"
-                                        Width="160"/>
+                                        Binding="{Binding AirDistance, StringFormat={}{0:F1}}"
+                                        Width="*"/>
 
                     <DataGridTextColumn Header="Schedule"
                                         Binding="{Binding scheduleStatus}"
-                                        Width="140"/>
+                                        Width="*"/>
 
                     <DataGridTextColumn Header="Time Remaining"
-                                        Binding="{Binding TimeRemainingToComplete}"
-                                        Width="170"/>
+                                        Binding="{Binding TimeRemainingToComplete, Converter={StaticResource TimeSpanToReadableConverter}}"
+                                        Width="1.3*"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

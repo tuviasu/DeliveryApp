@@ -288,6 +288,26 @@ internal static class Program
             else
                 Console.WriteLine("  PASS UpdateCourier");
 
+            // Verify GetCourierDetails never leaks password hash
+            if (updated.Password != null)
+                failures.Add($"GetCourierDetails should return null password, got a non-null value");
+            else
+                Console.WriteLine("  PASS GetCourierDetails returns null password (no hash exposure)");
+
+            // Verify password is preserved after editing non-password fields
+            try
+            {
+                var authRole = s_bl.Courier.AuthenticateCourier(newCourierId.ToString(), "test1234");
+                if (authRole != "Courier")
+                    failures.Add("Password lost after UpdateCourier with null password field");
+                else
+                    Console.WriteLine("  PASS Password preserved after UpdateCourier (null password = keep existing)");
+            }
+            catch (Exception authEx)
+            {
+                failures.Add($"Auth after UpdateCourier threw: {authEx.GetType().Name}: {authEx.Message}");
+            }
+
             s_bl.Courier.DeleteCourier(ADMIN, newCourierId);
             try
             {
@@ -316,6 +336,65 @@ internal static class Program
         {
             failures.Add($"Simulator threw: {ex.GetType().Name}: {ex.Message}");
             try { s_bl.Admin.StopSimulator(ADMIN); } catch { }
+        }
+
+        // 9. Task 5: verify no order can have two simultaneous active deliveries
+        try
+        {
+            // Create a fresh order
+            var task5Order = new BO.Order
+            {
+                OrderID = 0,
+                OrderType = OrderType.Individual,
+                Description = "Task5 dup-assignment test",
+                FullAddress = "Test Street 1",
+                Latitude = 32.064012,
+                Longitude = 34.774101,
+                CustomerFullName = "Task5 Customer",
+                CustomerPhone = "0500000001",
+                PizzaSize = DeviceType.Desktop
+            };
+            s_bl.Order.AddOrder(ADMIN.ToString(), task5Order);
+            var allOrds = s_bl.Order.GetOrdersList(ADMIN.ToString(), null, null, null).ToList();
+            int t5OrderId = allOrds.Max(o => o.OrderID);
+
+            // Find two free active couriers
+            var freeCouriers = s_bl.Courier.GetCouriersList(ADMIN, true, null)
+                .Where(c => c.orderInProgress == null)
+                .Take(2).ToList();
+
+            if (freeCouriers.Count >= 2)
+            {
+                // Assign first courier
+                s_bl.Order.SelectOrderForHandling(ADMIN.ToString(), freeCouriers[0].CourierID.ToString(), t5OrderId);
+
+                // Second assignment on same active order should throw
+                bool threw = false;
+                try
+                {
+                    s_bl.Order.SelectOrderForHandling(ADMIN.ToString(), freeCouriers[1].CourierID.ToString(), t5OrderId);
+                }
+                catch
+                {
+                    threw = true;
+                }
+
+                if (!threw)
+                    failures.Add("Task5: SelectOrderForHandling must throw when order already has active delivery");
+                else
+                    Console.WriteLine("  PASS Task5: duplicate active assignment correctly prevented");
+            }
+            else
+            {
+                Console.WriteLine("  SKIP Task5: not enough free active couriers for test");
+            }
+
+            // Always clean up
+            try { s_bl.Order.CancelOrder(ADMIN.ToString(), t5OrderId); } catch { }
+        }
+        catch (Exception ex)
+        {
+            failures.Add($"Task5 check threw: {ex.GetType().Name}: {ex.Message}");
         }
 
         return failures;

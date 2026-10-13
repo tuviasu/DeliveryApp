@@ -87,7 +87,6 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="Password" Binding="{Binding Password}"/>
                     <DataGridCheckBoxColumn Header="Active" Binding="{Binding IsActive}"/>
                     <DataGridTextColumn Header="Max Distance (KM)" Binding="{Binding MaxDeliveryDistanceKM}"/>
 
@@ -95,11 +94,12 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border CornerRadius="6"
-                                        Padding="6"
+                                        Padding="6,4"
                                         Background="{Binding DeliveryType, Converter={StaticResource DeliveryTypeToBackgroundKey}}">
-                                    <TextBlock Text="{Binding DeliveryType}"
-                                               Foreground="White"
-                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding DeliveryType, Converter={StaticResource DeliveryTypeToTextKey}}"
+                                               Foreground="{Binding DeliveryType, Converter={StaticResource DeliveryTypeToForegroundKey}}"
+                                               HorizontalAlignment="Center"
+                                               FontWeight="SemiBold"/>
                                 </Border>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

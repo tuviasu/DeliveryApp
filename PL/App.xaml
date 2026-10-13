@@ -26,6 +26,8 @@
         <conv:ConvertAddToNotVisibleKey x:Key="ConvertAddToNotVisibleKey" />
         <conv:TransportTypeToBackgroundConverter x:Key="TransportTypeToBackgroundKey" />
         <conv:DeliveryTypeToBackgroundConverter x:Key="DeliveryTypeToBackgroundKey" />
+        <conv:DeliveryTypeToTextConverter x:Key="DeliveryTypeToTextKey" />
+        <conv:DeliveryTypeToForegroundConverter x:Key="DeliveryTypeToForegroundKey" />
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityKey" />
         <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityKey" />
         <conv:InverseBooleanConverter x:Key="InverseBooleanKey" />

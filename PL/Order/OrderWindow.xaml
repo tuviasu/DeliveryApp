@@ -168,30 +168,43 @@
                             </Style>
                         </DataGrid.CellStyle>
 
+                        <DataGrid.Resources>
+                            <Style x:Key="CenteredCell" TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGrid.Resources>
+
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID"
                                                 Binding="{Binding DeliveryID}"
-                                                Width="70"/>
+                                                Width="70"
+                                                ElementStyle="{StaticResource CenteredCell}"/>
 
                             <DataGridTextColumn Header="Courier"
                                                 Binding="{Binding CourierName}"
-                                                Width="160"/>
+                                                Width="160"
+                                                ElementStyle="{StaticResource CenteredCell}"/>
 
                             <DataGridTextColumn Header="Type"
                                                 Binding="{Binding DeliveryType}"
-                                                Width="100"/>
+                                                Width="100"
+                                                ElementStyle="{StaticResource CenteredCell}"/>
 
                             <DataGridTextColumn Header="Start"
                                                 Binding="{Binding DeliveryStartTime}"
-                                                Width="150"/>
+                                                Width="150"
+                                                ElementStyle="{StaticResource CenteredCell}"/>
 
                             <DataGridTextColumn Header="Result"
                                                 Binding="{Binding deliveryDoneType}"
-                                                Width="110"/>
+                                                Width="110"
+                                                ElementStyle="{StaticResource CenteredCell}"/>
 
                             <DataGridTextColumn Header="Done Time"
                                                 Binding="{Binding DeliveryDoneTime}"
-                                                Width="150"/>
+                                                Width="150"
+                                                ElementStyle="{StaticResource CenteredCell}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>

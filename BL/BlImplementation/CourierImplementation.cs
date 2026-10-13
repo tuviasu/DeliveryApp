@@ -148,7 +148,7 @@ internal class CourierImplementation : ICourier
             StartWorkInCompany = doCourier.StartWorkInCompany,
             TransportType = (BO.DeliveryTransport)doCourier.TransportType,
             DeliveryType = doCourier.DeliveryType.HasValue ? (BO.DeliveryType?)doCourier.DeliveryType.Value : null,
-            Password = doCourier.Password,
+            Password = null,
             IsActive = doCourier.IsActive,
             MaxDeliveryDistanceKM = doCourier.MaxDeliveryDistanceKm,
             DeliveredInTime = deliveredOnTime,
@@ -249,7 +249,7 @@ internal class CourierImplementation : ICourier
                 Email = c.Email,
                 StartWorkInCompany = c.StartWorkInCompany,
                 TransportType = (BO.DeliveryTransport)c.TransportType,
-                Password = c.Password,
+                Password = null,
                 IsActive = c.IsActive,
                 MaxDeliveryDistanceKM = c.MaxDeliveryDistanceKm,
 

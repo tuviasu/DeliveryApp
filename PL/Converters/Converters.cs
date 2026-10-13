@@ -144,13 +144,37 @@ public class DeliveryTypeToBackgroundConverter : IValueConverter
                 _ => new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69))                           // blue-gray slate
             };
         }
-        return new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69)); // blue-gray slate instead of white
+        return new SolidColorBrush(Color.FromRgb(0xDB, 0xEA, 0xFE)); // soft blue #DBEAFE for null
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }
+}
+
+public class DeliveryTypeToTextConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is BO.DeliveryType dt)
+            return dt.ToString();
+        return "Not Set";
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+public class DeliveryTypeToForegroundConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is BO.DeliveryType)
+            return new SolidColorBrush(Colors.White);
+        return new SolidColorBrush(Color.FromRgb(0x1E, 0x40, 0xAF)); // dark blue #1E40AF
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
 }
 
 public class BoolToVisibilityConverter : IValueConverter

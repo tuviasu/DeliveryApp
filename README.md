@@ -1,4 +1,4 @@
-# 📦 DeliveryApp
+# DeliveryApp
 
 ### Desktop Logistics & Delivery Control Center — a specialized delivery management system for computer-equipment & tech retailers. Built with WPF / .NET 8 on a clean 3-tier architecture.
 
@@ -17,90 +17,98 @@
 </p>
 
 <p align="center">
-  <a href="#-quick-start--download">⬇️ Download</a> ·
-  <a href="#-demo-credentials">🔑 Credentials</a> ·
-  <a href="#-screenshots--demo">📸 Screenshots</a> ·
-  <a href="#-architecture--design-patterns">🏗️ Architecture</a>
+  <a href="#-download--quick-start">Download</a> ·
+  <a href="#-demo-login-credentials">Credentials</a> ·
+  <a href="#-screenshots">Screenshots</a> ·
+  <a href="#-architecture--design-patterns">Architecture</a>
 </p>
 
 ---
 
-## ⭐ Quick Start & Download
+## Download & Quick Start
 
-> DeliveryApp is a **Windows desktop application** (WPF / .NET 8) — it does not run in a browser tab. The fastest way to try it is the self-contained ZIP below: download, unzip, double-click the launcher, and you're in.
+> DeliveryApp is a **Windows desktop application** (WPF / .NET 8). Download the ZIP, extract, and double-click `DeliveryApp.exe` — no .NET installation required.
 
-> ### 👉 [Download `DeliveryApp.zip` from GitHub Releases](https://github.com/tuviasu/DeliveryApp/releases/latest)  *(self-contained Windows x64, ~68 MB, no .NET install required)*
+### [Download DeliveryApp.zip from GitHub Releases](https://github.com/tuviasu/DeliveryApp/releases/latest)
 
-1. **Download** `DeliveryApp.zip` from the link above and **unzip** it anywhere.
-2. Inside the unzipped folder, double-click **`DeliveryApp.exe`** to launch — no BAT file, no CMD window.
-3. Sign in with the **Admin** credentials below.
+*(Self-contained Windows x64 · ~80 MB · No .NET install needed)*
 
-> The data files live in `xml/` (sibling of `DeliveryApp.exe`). Keep them together — do not move the exe out of the folder.
+**Installation steps:**
 
-Prefer to build from source? See [🛠️ Local Setup & Run](#-local-setup--run).
+1. Click the link above and download **`DeliveryApp.zip`**.
+2. Extract the ZIP anywhere on your computer.
+3. Open the extracted folder and double-click **`DeliveryApp.exe`** to launch.
+   - No CMD/console window will appear.
+   - No BAT file needed.
+   - The `xml/` data folder must stay next to `app/`.
+4. Sign in with one of the demo accounts below.
 
 ---
 
-## 🔑 Demo Credentials
+## Demo Login Credentials
 
-The app ships seeded with the credentials below. **These are permanent — they survive both `Reset DB` and `Init DB`.**
+> These are **intentional public demo credentials** included so anyone can download and explore the application. They survive every Reset DB / Init DB operation.
 
-| Role | User ID | Password | Notes |
+| Role | User ID | Password | Description |
 |---|---|---|---|
-| **Admin / Manager** | `204857392` | `admin123` | Stored in `xml/data-config.xml` under `<Managers>`. |
-| **Courier** | `312458962` | `courier123` | Name: **Yossi Cohen** · Transport: **Motorcycle** · Max distance: **35 km**. Seeded automatically on every launch and after every DB reset. |
+| **Admin / Manager** | `204857392` | `admin123` | Full access: live dashboard, orders, couriers, clock, DB tools |
+| **Courier** | `312458962` | `courier123` | Courier workspace: pick orders, deliver, view history |
 
-> If you add more couriers via the Admin UI and then run **Init DB**, those new couriers are re-randomized — but the demo courier above is always restored with the same ID, name, and password.
+**How to log in:**
 
----
+1. Launch `DeliveryApp.exe`.
+2. Enter the **User ID** and **Password** from the table above.
+3. Click **Sign In** — the app automatically routes you to the correct screen based on your role.
 
-## ✨ Key Highlights
-
-- **🧱 Clean 3-Tier / Layered Architecture** — `PL` (WPF UI) → `BL` (business logic) → `DAL` (data). Every layer depends only on the **interface** of the one below it, so the BL never knows which storage engine is running.
-- **🔌 Pluggable persistence** — switch between **XML serialization** (`DalXml`) and **in-memory lists** (`DalList`) by editing a single config line (`xml/dal-config.xml`). Demonstrates the Factory + Facade patterns in practice.
-- **📡 Observer-driven live UI** — the BL exposes `AddObserver / RemoveObserver`; WPF windows subscribe and refresh only affected data (clock, config, orders, couriers). **No polling**, no timers. `INotifyPropertyChanged` + dependency properties drive the bindings.
-- **🧵 Thread-safe dispatch** — background notifications are marshaled onto the UI thread via the WPF `Dispatcher`, with a dedicated `ObserverMutex` preventing re-entrant refresh storms.
-- **🧩 Design patterns throughout** — Singleton (`Factory.Get()`), Factory (BL & DAL creation), Observer (live updates), Facade/Adapter (uniform CRUD over two backends), DI via interfaces.
-- **🎨 Cohesive modern UI** — a shared theme (`App.xaml`) keeps every window visually consistent: rounded buttons/cards, focus-highlight inputs, gradient accents.
+> Both roles are fully operational. The Admin role provides full management capability. The Courier role provides a focused personal workspace for picking up and completing deliveries.
 
 ---
 
-## 🎯 Project Overview
+## Screenshots
 
-**DeliveryApp** is a desktop application that drives the end-to-end delivery operation of a computer-equipment & tech retailer. It manages **orders**, **couriers**, and **deliveries**, and exposes two distinct experiences through a single login screen:
-
-- **Admin / Manager** — full operational control: a system dashboard with a configurable clock, live orders summary with filtering, system configuration, and CRUD over couriers and orders.
-- **Courier** — a focused self-service workspace: view/edit personal details, pick an available order, handle an in-progress delivery, and review past delivery history.
-
-DeliveryApp is engineered around **clean architecture, design patterns, and real-world system design**.
+> Screenshots of the live application are pending capture. The screenshot folder structure is in place at `docs/screenshots/`. See [`docs/screenshots/SCREENSHOTS_PENDING.md`](docs/screenshots/SCREENSHOTS_PENDING.md) for capture instructions.
+>
+> **To contribute screenshots:** run `DeliveryApp.exe`, capture each screen listed in the file above, and save PNGs to `docs/assets/`.
 
 ---
 
-## 📸 Screenshots & Demo
+## Key Highlights
 
-> Screenshots are coming soon. See [`docs/screenshots/SCREENSHOTS_PENDING.md`](docs/screenshots/SCREENSHOTS_PENDING.md) for instructions on adding them. Placeholder paths below will be replaced once captures are available.
-
-| Login Screen | Admin Dashboard | Courier Dashboard |
-|---|---|---|
-| <img src="docs/assets/login.png" alt="Login" width="420"> | <img src="docs/assets/admin_dashboard.png" alt="Admin Dashboard" width="420"> | <img src="docs/assets/courier_view.png" alt="Courier Dashboard" width="420"> |
-
-| Order Management | Order Details | Courier List |
-|---|---|---|
-| <img src="docs/assets/order_management.png" alt="Order Management" width="420"> | <img src="docs/assets/order_details.png" alt="Order Details" width="420"> | <img src="docs/assets/courier_list.png" alt="Courier List" width="420"> |
-
-| Choose Order | Delivery History | Courier Add/Edit |
-|---|---|---|
-| <img src="docs/assets/choose_order.png" alt="Choose Order" width="420"> | <img src="docs/assets/delivery_history.png" alt="Delivery History" width="420"> | <img src="docs/assets/courier_edit.png" alt="Courier Add/Edit" width="420"> |
+- **Clean 3-Tier Architecture** — `PL` (WPF UI) → `BL` (business logic) → `DAL` (data). Every layer depends only on the interface of the one below it.
+- **Pluggable persistence** — switch between XML serialization (`DalXml`) and in-memory lists (`DalList`) by editing one config line.
+- **Observer-driven live UI** — BL exposes `AddObserver / RemoveObserver`; WPF windows refresh only affected data. No polling, no timers.
+- **Thread-safe dispatch** — background notifications marshaled to the UI thread via WPF `Dispatcher`, with `ObserverMutex` preventing re-entrant refresh storms.
+- **Auto Order IDs** — new orders receive the next sequential ID automatically; the Order ID field is read-only and never shows `0`.
+- **Modern UI theme** — shared `App.xaml` keeps every window visually consistent: rounded cards, gradient buttons, focus-highlight inputs, semantic badge colors.
 
 ---
 
-## 🏗️ Architecture & Design Patterns
+## Project Overview
 
-The solution follows a strict **3-Tier Layered Architecture** with a shared facade contract. Each layer depends only on the abstraction of the layer below it.
+**DeliveryApp** manages the end-to-end delivery operation of a computer-equipment & tech retailer. It handles **orders**, **couriers**, and **deliveries** through two distinct role experiences:
+
+**Admin / Manager:**
+- Live system dashboard with configurable clock
+- Orders summary with filtering by status, schedule, type
+- Full CRUD over orders and couriers
+- System configuration (max distance, time windows, etc.)
+- Database tools: Init DB, Reset DB
+- Background delivery simulator
+
+**Courier:**
+- Personal profile view and edit
+- Current in-progress delivery details
+- Browse and claim available orders
+- Complete deliveries with result type
+- Full delivery history
+
+---
+
+## Architecture & Design Patterns
 
 ```
 ┌──────────────────────────────────────────────┐
-│   PL  — Presentation Layer (WPF / XAML)      │  Data binding · commands · observers
+│   PL  — Presentation Layer (WPF / XAML)      │  Data binding · converters · observers
 ├──────────────────────────────────────────────┤
 │   BL  — Business Logic Layer (.NET 8)        │  Validation · rules · notifications
 ├──────────────────────────────────────────────┤
@@ -112,7 +120,7 @@ The solution follows a strict **3-Tier Layered Architecture** with a shared faca
 
 | Layer | Project | Responsibility |
 |---|---|---|
-| **PL** | `PL/` | WPF windows, data binding, converters, observer-driven refresh |
+| **PL** | `PL/` | WPF windows, data binding, value converters, observer-driven refresh |
 | **BL** | `BL/` | Business rules, DTOs (`BO/`), manager helpers, observer hubs |
 | **DalFacade** | `DalFacade/` | DAL interfaces (`ICrud<T>`, `IDal`), DO entities, `Factory`, exceptions |
 | **DalList** | `DalList/` | In-memory implementation with seeded data |
@@ -121,50 +129,18 @@ The solution follows a strict **3-Tier Layered Architecture** with a shared faca
 | **BITest** | `BITest/` | Backwards-compatibility / integration tests |
 | **uitest** | `uitest/` | Headless UI + BL integration test harness |
 
-The active DAL is chosen at runtime via `xml/dal-config.xml` (`<dal>xml</dal>` → DalXml, `list` → DalList) and instantiated through the **Factory** pattern, so the BL never knows which storage engine is running.
-
-### Design Patterns Used
+### Design Patterns
 
 - **Singleton** — `Factory.Get()` returns a single shared `IBl` / `IDal` instance.
 - **Factory** — `BlApi.Factory` and `DalApi.Factory` decouple creation from implementation.
-- **Observer** — the BL exposes `AddObserver / RemoveObserver`; PL windows subscribe and refresh only the affected data (clock, config, orders, couriers) — no polling. WPF `INotifyPropertyChanged` + dependency properties propagate changes to the UI.
+- **Observer** — the BL exposes `AddObserver / RemoveObserver`; PL windows subscribe and refresh only affected data.
 - **Adapter / Facade** — `DalFacade` presents a uniform CRUD interface over two very different backends.
-- **Dependency Injection via interfaces** — every layer programs to interfaces (`IBl`, `ICourier`, `IOrder`, `IAdmin`, `ICrud<T>`).
-- **Thread-safe observer dispatch** — `ObserverMutex` + `Dispatcher.BeginInvoke` marshal background notifications onto the UI thread and prevent re-entrant refresh storms.
-
-### Concurrency & Reliability
-
-- Background observer callbacks are marshaled to the UI thread via the WPF `Dispatcher`.
-- A dedicated `ObserverMutex` guards each refresh path against re-entrancy and schedules a re-run if a notification arrives mid-refresh.
-- Password verification accepts both hashed and legacy plaintext stored values, so seeded demo data logs in cleanly.
-- Network distance lookups (OSRM) degrade gracefully to `null` on any HTTP/parse failure, so the simulator and the open-orders list stay responsive even when the public OSRM demo server is unavailable.
+- **Dependency Injection via interfaces** — every layer programs to `IBl`, `ICourier`, `IOrder`, `IAdmin`, `ICrud<T>`.
+- **Thread-safe observer dispatch** — `ObserverMutex` + `Dispatcher.BeginInvoke` marshal background notifications onto the UI thread.
 
 ---
 
-## ✨ Core Features
-
-### 🛡️ Admin / Manager
-- **System Clock** — advance the simulated clock by minute / hour / day / month / year; the UI updates live.
-- **System Configuration** — tune max delivery distance, max delivery time, risk range, and inactivity time.
-- **Orders Summary** — filter the live order count by _Delivery Done Type_ and _Schedule Status_, then jump straight to the filtered order list.
-- **Courier Management** — list, filter by transport, add, update, and delete couriers.
-- **Order Management** — list, filter, sort, add, update, and cancel orders; inspect every delivery attached to an order.
-- **Database Tools** — initialize (re-seed) or reset the database from the dashboard.
-
-### 🚚 Courier
-- **Personal Details** — view and update name, phone, email, transport, max distance, and delivery type.
-- **Order In Progress** — see the active delivery (address, customer, phone, time windows) and finish handling with a result type.
-- **Choose Order** — browse available orders and claim one.
-- **Delivery History** — review every past delivery with handling time and result.
-
-### 🔐 Authentication
-- A single modern login screen routes users to the correct experience based on credentials.
-- Inline validation feedback (no jarring message boxes for routine input errors).
-- Show/hide password toggle, Enter-to-submit, role badges.
-
----
-
-## 🛠️ Technologies
+## Technologies
 
 | | |
 |---|---|
@@ -173,16 +149,15 @@ The active DAL is chosen at runtime via `xml/dal-config.xml` (`<dal>xml</dal>` �
 | **UI** | WPF + XAML, data binding, value converters, shared styled theme |
 | **Data** | XML serialization (`DalXml`) / in-memory lists (`DalList`) |
 | **Patterns** | Singleton, Factory, Observer, Facade |
-| **Query** | LINQ |
-| **Tests** | Headless UI + BL integration harness (`uitest`), interactive DAL console (`DalTest`), integration tests (`BITest`) |
+| **Tests** | Headless UI + BL integration harness (`uitest`) |
 
 ---
 
-## 🚀 Local Setup & Run
+## Local Setup & Run
 
 ### Prerequisites
-- **.NET 8 SDK** (with WPF / Windows desktop workload) — Windows required for the WPF UI.
-- (Optional) Visual Studio 2022 for an IDE experience.
+- **.NET 8 SDK** (with WPF / Windows desktop workload) — Windows required for WPF.
+- (Optional) Visual Studio 2022.
 
 ### 1. Clone
 ```bash
@@ -194,19 +169,13 @@ cd DeliveryApp
 ```bash
 dotnet build DeliveryApp.sln -c Debug
 ```
-All projects share a common output directory: `bin/`.
 
 ### 3. Run
-The startup project is **`PL`** (`StartupUri="LoginPage.xaml"`). The app must run from a directory whose **parent contains an `xml/` folder** (DalXml loads data from `..\xml\`). The shared `bin/` output satisfies this (`bin/../xml`).
-
 ```bash
-# From the repo root:
-dotnet bin/PL.dll
-#   — or —
-bin/PL.exe
+# From the repo root — the shared bin/ output satisfies the xml\ path requirement
+bin/DeliveryApp.exe
 ```
-
-Sign in with the **Admin** credentials above to reach the dashboard.
+Sign in with the demo credentials above.
 
 ### 4. Switch the data backend (optional)
 Edit `xml/dal-config.xml`:
@@ -214,43 +183,41 @@ Edit `xml/dal-config.xml`:
 <dal>xml</dal>   <!-- or: list -->
 ```
 
-### 5. Run the headless test harness (optional)
+### 5. Run tests
 ```bash
-dotnet build DeliveryApp.sln -c Debug
-dotnet bin/uitest.dll
+dotnet run --project uitest/uitest.csproj
 ```
-The harness exercises authentication, ResetDB/InitializeDB, order/courier CRUD, filtering, sorting, the simulator, and instantiates every WPF window — it prints `ALL TESTS OK.` on success.
+Prints `ALL TESTS OK.` on success.
 
 ---
 
-## 📦 Release Package
+## Build & Release Package
 
-A self-contained, no-.NET-install-required build is published for Windows x64:
+GitHub Actions builds and publishes the self-contained `DeliveryApp.zip` automatically on every push to `main`. There is always exactly **one permanent release** at:
 
+```
+https://github.com/tuviasu/DeliveryApp/releases/latest
+```
+
+To build manually:
 ```bash
 dotnet publish PL/PL.csproj -c Release -r win-x64 --self-contained true -o publish/app
 cp -r xml publish/xml
+# zip publish/ -> DeliveryApp.zip
 ```
-
-The packaged archive **`DeliveryApp.zip`** (on the [Releases page](https://github.com/tuviasu/DeliveryApp/releases/latest)) contains a `DeliveryApp_v2.0/` folder with:
-- `DeliveryApp.exe` — the self-contained executable (double-click to launch, no BAT file needed),
-- `xml/` — the data files (`orders.xml`, `deliveries.xml`, `couriers.xml`, `data-config.xml`, `dal-config.xml`),
-- runtime DLLs and resources.
-
-Unzip anywhere and double-click **`DeliveryApp.exe`**.
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 DeliveryApp/
 ├── PL/                     # WPF presentation layer (startup project)
-│   ├── App.xaml            # App + shared modern theme (buttons/cards/inputs)
-│   ├── LoginPage.xaml      # Modern role-aware login screen
-│   ├── MainWindow.xaml     # Admin dashboard (clock, config, summary, actions)
-│   ├── Courier/            # Courier windows (list, self, edit, history, choose-order)
-│   ├── Order/              # Order windows (list, details)
+│   ├── App.xaml            # Shared modern theme (buttons, cards, inputs)
+│   ├── LoginPage.xaml      # Role-aware login screen
+│   ├── MainWindow.xaml     # Admin dashboard
+│   ├── Courier/            # Courier windows
+│   ├── Order/              # Order windows
 │   ├── Converters/         # Value converters
 │   └── Helpers/            # ObserverMutex, etc.
 ├── BL/                     # Business logic + BO DTOs + manager helpers
@@ -260,44 +227,42 @@ DeliveryApp/
 ├── DalTest/                # Interactive DAL test console
 ├── BITest/                 # Integration tests
 ├── uitest/                 # Headless UI + BL integration harness
-├── docs/assets/            # Screenshots & demo media
+├── docs/                   # Screenshots and documentation
 ├── xml/                    # Runtime / seed data files
 └── DeliveryApp.sln
 ```
 
 ---
 
-## 🎬 Demo Video Script
+## Changelog
 
-A short (60–90s) walkthrough. See the full script in [`docs/DEMO_VIDEO_SCRIPT.md`](docs/DEMO_VIDEO_SCRIPT.md).
+### Latest (current)
+- Single permanent GitHub Release — always the latest build at the same URL.
+- Both login roles (Admin and Courier) verified and documented.
+- Demo credentials displayed publicly in README and Release description.
+- Cleanup of old numbered versioned releases.
 
-**Flow:** Login → Admin Order Management → Courier Assignment & Status Update → Architecture recap.
-
----
-
-## 📝 Notes for Reviewers
-
-- **Layering is enforced through interfaces**, not just folders — the BL references `DalFacade` (the contract), never a concrete DAL.
-- **Live UI updates** are driven by the Observer pattern, not timers — a background change in the BL notifies only the subscribed windows.
-- **The DAL is swappable at runtime** via a single config line, demonstrating the Factory + Facade patterns in practice.
-- **UI consistency** is centralized: a shared theme in `App.xaml` (`AppPrimaryButton`, `AppCard`, `AppTextBox`, …) keeps every window visually coherent.
-- **Deterministic demo credentials** are restored on every `Reset DB` / `Init DB`, so the login above always works.
-
----
-
-## 📋 Changelog
-
-### v2.0 (latest)
-- **No more BAT file**: `DeliveryApp.exe` is now the direct entry point — just double-click, no CMD window appears.
-- **Auto Order IDs**: New orders receive a sequential ID automatically (max existing ID + 1, starting from 1000). The Order ID field is now read-only in the Add form.
-- **Better UI colors**: Delivery Type column now uses themed blue-gray instead of white for null/unknown values, matching the Transport Type column style.
-- **Cleaner package structure**: Single folder with `DeliveryApp.exe` + `xml/` at the top level.
+### v2.0
+- Auto-assigned sequential Order IDs (max existing + 1); Order ID field read-only.
+- Direct `DeliveryApp.exe` launch — no BAT file, no CMD window.
+- Fixed Delivery Type badge colors: blue-gray slate for null/unknown values.
+- Self-contained Windows x64 package, no .NET install required.
 
 ### v1.0
 - Initial release.
 
 ---
 
-## 📄 License
+## Notes for Reviewers
+
+- **Layering is enforced through interfaces**, not just folders — the BL references `DalFacade` (the contract), never a concrete DAL.
+- **Live UI updates** are driven by the Observer pattern — a background change in the BL notifies only the subscribed windows, no timers.
+- **The DAL is swappable at runtime** via a single config line, demonstrating the Factory + Facade patterns.
+- **UI consistency** is centralized in `App.xaml` (`AppPrimaryButton`, `AppCard`, `AppTextBox`, …).
+- **Demo credentials** are restored on every Reset DB / Init DB, so login always works.
+
+---
+
+## License
 
 Proprietary — provided as-is for portfolio and demonstration purposes.

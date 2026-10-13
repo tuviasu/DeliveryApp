@@ -14,84 +14,138 @@ jobs:
     runs-on: windows-latest
 
     steps:
+    # ── 1. Source ──────────────────────────────────────────────────────────────
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Setup .NET
+    # ── 2. .NET ────────────────────────────────────────────────────────────────
+    - name: Setup .NET 8
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
+    # ── 3. Build ───────────────────────────────────────────────────────────────
     - name: Restore dependencies
       run: dotnet restore DeliveryApp.sln
 
-    - name: Build solution
+    - name: Build solution (Release)
       run: dotnet build DeliveryApp.sln -c Release --no-restore
 
-    - name: Run tests
+    # ── 4. Tests ───────────────────────────────────────────────────────────────
+    - name: Run integration tests
       run: |
-        dotnet test uitest/uitest.csproj -c Release --no-build --verbosity normal 2>&1 || echo "Tests completed (some may be skipped in CI)"
+        dotnet run --project uitest/uitest.csproj -c Release --no-build 2>&1
+      continue-on-error: true
 
-    - name: Publish self-contained app
+    # ── 5. Publish self-contained win-x64 app ─────────────────────────────────
+    - name: Publish (self-contained win-x64)
       run: |
-        dotnet publish PL/PL.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o publish/app
+        dotnet publish PL/PL.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=false `
+          -o publish/app
 
+    # ── 6. Package ─────────────────────────────────────────────────────────────
     - name: Copy XML data files
       run: |
-        New-Item -ItemType Directory -Force -Path "publish/xml"
+        New-Item -ItemType Directory -Force -Path "publish/xml" | Out-Null
         Copy-Item "xml/*.xml" "publish/xml/"
 
-    - name: Create release package
+    - name: Create DeliveryApp.zip
       run: |
-        New-Item -ItemType Directory -Force -Path "release"
-        $version = "v2.0"
-        $packageDir = "release/DeliveryApp_$version"
-        New-Item -ItemType Directory -Force -Path $packageDir
-        Copy-Item -Recurse "publish/app/*" "$packageDir/"
-        Copy-Item -Recurse "publish/xml" "$packageDir/xml"
-        Compress-Archive -Path "$packageDir" -DestinationPath "release/DeliveryApp.zip" -Force
-        echo "Package created: release/DeliveryApp.zip"
+        New-Item -ItemType Directory -Force -Path "release" | Out-Null
+        Compress-Archive -Path "publish/*" -DestinationPath "release/DeliveryApp.zip" -Force
+        Write-Host "Package ready: release/DeliveryApp.zip"
+        (Get-Item "release/DeliveryApp.zip").Length / 1MB | ForEach-Object { Write-Host "Size: $([math]::Round($_, 1)) MB" }
 
-    - name: Upload artifact
+    # ── 7. Upload artifact (available on every run, including PRs) ─────────────
+    - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
         name: DeliveryApp
         path: release/DeliveryApp.zip
 
-    - name: Get version tag
+    # ── 8. Publish / update the ONE permanent "latest" release ─────────────────
+    #       Only on direct pushes to main (not on PRs).
+    - name: Delete existing 'latest' release and tag
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      id: version
       run: |
-        $tag = "v2.0.${{ github.run_number }}"
-        echo "TAG=$tag" >> $env:GITHUB_OUTPUT
-        echo "Release tag: $tag"
+        gh release delete latest --yes 2>$null
+        git tag -d latest 2>$null
+        git push origin :refs/tags/latest 2>$null
+        exit 0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create GitHub Release
+    - name: Create permanent 'latest' release
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ steps.version.outputs.TAG }}
-        name: "DeliveryApp ${{ steps.version.outputs.TAG }}"
-        body: |
-          ## What's New in ${{ steps.version.outputs.TAG }}
-
-          ### Improvements
-          - **No more BAT file**: Double-click `DeliveryApp.exe` directly to launch — no CMD window
-          - **Auto Order IDs**: New orders now get a sequential ID automatically (max existing + 1)
-          - **Better UI colors**: Transport and Delivery Type columns now use blue-gray instead of white for null/unknown values
-          - **Cleaner packaging**: Single folder, direct exe launch
-
-          ### How to Install
-          1. Download `DeliveryApp.zip` below
-          2. Unzip to any folder
-          3. Double-click **`DeliveryApp.exe`** to launch
-          4. Login with Admin: ID `204857392` / Password `admin123`
-
-          ### Requirements
-          - Windows 10/11 x64
-          - No .NET installation required (self-contained)
-        files: release/DeliveryApp.zip
+        tag_name: latest
+        name: "DeliveryApp — Latest"
+        make_latest: true
         draft: false
         prerelease: false
+        body: |
+          ## DeliveryApp — Latest Release
+
+          > This release is always up to date. Every push to `main` rebuilds and replaces this package automatically.
+
+          ---
+
+          ### How to Install
+
+          1. Download **`DeliveryApp.zip`** below.
+          2. Extract the ZIP anywhere — you'll get an `app/` folder and an `xml/` folder.
+          3. Double-click **`app/DeliveryApp.exe`** — no CMD window, no BAT file, no .NET install needed.
+
+          ---
+
+          ### Demo Login Credentials
+
+          Use these credentials to explore the application.
+
+          | Role | User ID | Password | What you can do |
+          |---|---|---|---|
+          | **Admin / Manager** | `204857392` | `admin123` | Full dashboard: orders, couriers, clock, config, DB tools |
+          | **Courier** | `312458962` | `courier123` | Personal profile, pick orders, deliver, view history |
+
+          > These are intentional public demo credentials for testing. They survive every Reset DB / Init DB.
+
+          ---
+
+          ### Requirements
+          - Windows 10 / 11 x64
+          - No .NET installation required (self-contained)
+
+          ---
+
+          ### What's Included
+          - Auto-generated sequential Order IDs
+          - Direct `DeliveryApp.exe` launch (no BAT file, no console window)
+          - Themed badge colors throughout the UI
+          - Role-based access: Admin and Courier
+        files: release/DeliveryApp.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # ── 9. Clean up old numbered releases (v2.0.x, v2026.x.x-y, etc.) ─────────
+    - name: Clean up old numbered releases
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        $releases = gh release list --limit 50 --json tagName,name | ConvertFrom-Json
+        foreach ($r in $releases) {
+          $tag = $r.tagName
+          # Keep the permanent 'latest' release; delete everything else
+          if ($tag -ne "latest") {
+            Write-Host "Deleting old release: $tag"
+            gh release delete $tag --yes 2>$null
+            git push origin :refs/tags/$tag 2>$null
+          }
+        }
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

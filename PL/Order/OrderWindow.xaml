@@ -65,8 +65,8 @@
 
                 <!-- Fields -->
                 <TextBox Grid.Column="1" Grid.Row="0"
-                         Text="{Binding CurrentOrder.OrderID, Mode=TwoWay}"
-                         IsReadOnly="{Binding ButtonText, Converter={StaticResource ConvertUpdateToTrueKey}}"
+                         Text="{Binding CurrentOrder.OrderID, Mode=OneWay}"
+                         IsReadOnly="True"
                          Margin="0,6"/>
 
                 <ComboBox Grid.Column="1" Grid.Row="1"

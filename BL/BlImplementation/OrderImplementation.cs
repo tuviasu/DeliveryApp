@@ -5,14 +5,23 @@ using Helpers;
 
 internal class OrderImplementation : IOrder
 {
+    public int GetNextOrderId(string requesterId)
+    {
+        var allOrders = OrderManager.GetAllOrders().ToList();
+        return allOrders.Any() ? allOrders.Max(o => o.OrderID) + 1 : 1000;
+    }
+
     public void AddOrder(string requesterId, Order order)
     {
         AdminManager.ThrowOnSimulatorIsRunning(); //stage 7
         if (order == null)
             throw new BlInvalidIdException("Order cannot be null", null);
 
+        var allOrders = OrderManager.GetAllOrders().ToList();
+        int nextId = allOrders.Any() ? allOrders.Max(o => o.OrderID) + 1 : 1000;
+
         var doOrder = new DO.Order(
-            OrderID: order.OrderID,
+            OrderID: nextId,
             Description: order.Description,
             FullAddress: order.FullAddress,
             Latitude: order.Latitude,

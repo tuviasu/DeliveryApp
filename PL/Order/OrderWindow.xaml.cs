@@ -37,8 +37,10 @@ namespace PL.Order
 
             if (OrderId == 0)
             {
+                int nextId = s_bl.Order.GetNextOrderId(_requesterId);
                 CurrentOrder = new BO.Order
                 {
+                    OrderID = nextId,
                     OrderOpenTime = _now,
                     MaxDeliveryTime = _now.Add(_cfg.MaxDeliveryTimeRange),
                     OrderType = BO.OrderType.Individual,
@@ -372,9 +374,7 @@ namespace PL.Order
                 return errors;
             }
 
-            // On Add the user supplies the Order ID; it must be a positive integer.
-            if (ButtonText == "Add" && CurrentOrder.OrderID <= 0)
-                errors.Add("Order ID must be a positive number.");
+            // Order ID is now auto-assigned; no manual validation needed.
 
             if (string.IsNullOrWhiteSpace(CurrentOrder.CustomerFullName))
                 errors.Add("Customer name is required.");

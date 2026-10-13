@@ -53,6 +53,13 @@ public interface IOrder: IObservable
     void DeleteOrder(string requesterId, int orderId);
 
     /// <summary>
+    /// Gets the next available sequential order ID.
+    /// </summary>
+    /// <param name="requesterId">ID of the requester</param>
+    /// <returns>Next available order ID</returns>
+    int GetNextOrderId(string requesterId);
+
+    /// <summary>
     /// Adds a new order to the system.
     /// </summary>
     /// <param name="requesterId">ID of the requester</param>

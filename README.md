@@ -32,11 +32,10 @@
 > ### 👉 [Download `DeliveryApp.zip` from GitHub Releases](https://github.com/tuviasu/DeliveryApp/releases/latest)  *(self-contained Windows x64, ~68 MB, no .NET install required)*
 
 1. **Download** `DeliveryApp.zip` from the link above and **unzip** it anywhere.
-2. Open the unzipped `DeliveryApp_v1.0/` folder and double-click **`Run_DeliveryApp.bat`** to launch (1-click).
-   *(or run `DeliveryApp_v1.0/app/PL.exe` directly — full instructions in `START_HERE.txt` / `HOW_TO_RUN.txt`)*
+2. Inside the unzipped folder, double-click **`DeliveryApp.exe`** to launch — no BAT file, no CMD window.
 3. Sign in with the **Admin** credentials below.
 
-> The data files live in `DeliveryApp_v1.0/xml/` (sibling of `app/`), which is where the app reads from at runtime. Keep the `app/` and `xml/` folders together.
+> The data files live in `xml/` (sibling of `DeliveryApp.exe`). Keep them together — do not move the exe out of the folder.
 
 Prefer to build from source? See [🛠️ Local Setup & Run](#-local-setup--run).
 
@@ -79,7 +78,7 @@ DeliveryApp is engineered around **clean architecture, design patterns, and real
 
 ## 📸 Screenshots & Demo
 
-> Place captures in [`docs/assets/`](docs/assets) — the links below point to those files. Replace the placeholders with your exports.
+> Screenshots are coming soon. See [`docs/screenshots/SCREENSHOTS_PENDING.md`](docs/screenshots/SCREENSHOTS_PENDING.md) for instructions on adding them. Placeholder paths below will be replaced once captures are available.
 
 | Login Screen | Admin Dashboard | Courier Dashboard |
 |---|---|---|
@@ -233,13 +232,12 @@ dotnet publish PL/PL.csproj -c Release -r win-x64 --self-contained true -o publi
 cp -r xml publish/xml
 ```
 
-The packaged archive **`DeliveryApp.zip`** (on the [Releases page](https://github.com/tuviasu/DeliveryApp/releases/latest)) contains a `DeliveryApp_v1.0/` folder with:
-- `app/` — the self-contained executable and all runtime files,
+The packaged archive **`DeliveryApp.zip`** (on the [Releases page](https://github.com/tuviasu/DeliveryApp/releases/latest)) contains a `DeliveryApp_v2.0/` folder with:
+- `DeliveryApp.exe` — the self-contained executable (double-click to launch, no BAT file needed),
 - `xml/` — the data files (`orders.xml`, `deliveries.xml`, `couriers.xml`, `data-config.xml`, `dal-config.xml`),
-- `Run_DeliveryApp.bat` — 1-click launcher,
-- `START_HERE.txt` / `HOW_TO_RUN.txt` — quick-start guide.
+- runtime DLLs and resources.
 
-Unzip anywhere and run `DeliveryApp_v1.0/Run_DeliveryApp.bat` (or `DeliveryApp_v1.0/app/PL.exe`).
+Unzip anywhere and double-click **`DeliveryApp.exe`**.
 
 ---
 
@@ -284,6 +282,19 @@ A short (60–90s) walkthrough. See the full script in [`docs/DEMO_VIDEO_SCRIPT.
 - **The DAL is swappable at runtime** via a single config line, demonstrating the Factory + Facade patterns in practice.
 - **UI consistency** is centralized: a shared theme in `App.xaml` (`AppPrimaryButton`, `AppCard`, `AppTextBox`, …) keeps every window visually coherent.
 - **Deterministic demo credentials** are restored on every `Reset DB` / `Init DB`, so the login above always works.
+
+---
+
+## 📋 Changelog
+
+### v2.0 (latest)
+- **No more BAT file**: `DeliveryApp.exe` is now the direct entry point — just double-click, no CMD window appears.
+- **Auto Order IDs**: New orders receive a sequential ID automatically (max existing ID + 1, starting from 1000). The Order ID field is now read-only in the Add form.
+- **Better UI colors**: Delivery Type column now uses themed blue-gray instead of white for null/unknown values, matching the Transport Type column style.
+- **Cleaner package structure**: Single folder with `DeliveryApp.exe` + `xml/` at the top level.
+
+### v1.0
+- Initial release.
 
 ---
 

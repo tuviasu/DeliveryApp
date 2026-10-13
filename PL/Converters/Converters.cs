@@ -139,12 +139,12 @@ public class DeliveryTypeToBackgroundConverter : IValueConverter
         {
             return deliveryType switch
             {
-                BO.DeliveryType.Express => new SolidColorBrush(Colors.Gold),
-                BO.DeliveryType.Regular => new SolidColorBrush(Colors.LimeGreen),
-                _ => new SolidColorBrush(Colors.White)
+                BO.DeliveryType.Express => new SolidColorBrush(Color.FromRgb(0xD9, 0x77, 0x06)),    // amber/orange
+                BO.DeliveryType.Regular => new SolidColorBrush(Color.FromRgb(0x16, 0xA3, 0x4A)),    // green
+                _ => new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69))                           // blue-gray slate
             };
         }
-        return new SolidColorBrush(Colors.White);
+        return new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69)); // blue-gray slate instead of white
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

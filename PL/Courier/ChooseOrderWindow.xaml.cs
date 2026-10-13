@@ -124,6 +124,18 @@ public partial class ChooseOrderWindow : Window
                 return;
             }
 
+            if (SelectedOrder.scheduleStatus == BO.ScheduleStatus.Late)
+            {
+                var deadline = SelectedOrder.MaxDeliveryTime.ToString("dd/MM/yyyy HH:mm");
+                var confirm = MessageBox.Show(
+                    $"This order's deadline has already passed ({deadline}).\n\nDo you still want to take it?",
+                    "Overdue Order",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+                if (confirm != MessageBoxResult.Yes)
+                    return;
+            }
+
             s_bl.Order.SelectOrderForHandling("0", CourierId.ToString(), SelectedOrder.OrderID);
             DialogResult = true;
             Close();

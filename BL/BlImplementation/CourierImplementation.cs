@@ -134,7 +134,8 @@ internal class CourierImplementation : ICourier
                     MaxDeliveryTime = maxDeliveryTime,
                     orderStatus = OrderStatus.NotDelivered,
                     scheduleStatus = scheduleStatus,
-                    TotalTimeToCompleteAnOrder = AdminManager.Now - order.OrderOpeningTime
+                    TotalTimeToCompleteAnOrder = AdminManager.Now - order.OrderOpeningTime,
+                    TimeRemainingToComplete = timeRemaining
                 };
             }
         }
@@ -203,7 +204,8 @@ internal class CourierImplementation : ICourier
                         MaxDeliveryTime = maxDeliveryTime,
                         orderStatus = OrderStatus.NotDelivered,
                         scheduleStatus = scheduleStatus,
-                        TotalTimeToCompleteAnOrder = AdminManager.Now - order.OrderOpeningTime
+                        TotalTimeToCompleteAnOrder = AdminManager.Now - order.OrderOpeningTime,
+                        TimeRemainingToComplete = timeRemaining
                     };
                 }
 

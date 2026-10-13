@@ -84,5 +84,10 @@ public class OrderInProgress
     /// </summary>
     public TimeSpan TotalTimeToCompleteAnOrder { get; init; }
 
+    /// <summary>
+    /// Time remaining until the order deadline (negative = overdue)
+    /// </summary>
+    public TimeSpan TimeRemainingToComplete { get; init; }
+
     public override string ToString() => this.ToStringProperty();
 }

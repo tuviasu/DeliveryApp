@@ -35,6 +35,8 @@
         <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <conv:NullableToBoolConverter x:Key="NullableToBoolConverter" />
         <conv:TimeSpanToReadableConverter x:Key="TimeSpanToReadableConverter" />
+        <conv:ScheduleStatusToBackgroundConverter x:Key="ScheduleStatusToBackgroundKey" />
+        <conv:ScheduleStatusToTextConverter x:Key="ScheduleStatusToTextKey" />
 
         <!-- ============================================================ -->
         <!-- SHARED MODERN THEME (used across all windows for consistency)-->

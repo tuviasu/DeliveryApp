@@ -80,30 +80,56 @@
                     </Style>
                 </DataGrid.CellStyle>
 
+                <DataGrid.Resources>
+                    <Style x:Key="CenteredCell" TargetType="TextBlock">
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                    <Style x:Key="LeftCell" TargetType="TextBlock">
+                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                </DataGrid.Resources>
+
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Order ID"
                                         Binding="{Binding OrderID}"
-                                        Width="110"/>
+                                        Width="110"
+                                        ElementStyle="{StaticResource CenteredCell}"/>
 
                     <DataGridTextColumn Header="Type"
                                         Binding="{Binding orderType}"
-                                        Width="130"/>
+                                        Width="130"
+                                        ElementStyle="{StaticResource CenteredCell}"/>
 
                     <DataGridTextColumn Header="Address"
                                         Binding="{Binding FullAddress}"
-                                        Width="3*"/>
+                                        Width="3*"
+                                        ElementStyle="{StaticResource LeftCell}"/>
 
                     <DataGridTextColumn Header="Air Distance (km)"
-                                        Binding="{Binding AirDistance}"
-                                        Width="160"/>
+                                        Binding="{Binding AirDistance, StringFormat={}{0:F2}}"
+                                        Width="160"
+                                        ElementStyle="{StaticResource CenteredCell}"/>
 
-                    <DataGridTextColumn Header="Schedule"
-                                        Binding="{Binding scheduleStatus}"
-                                        Width="140"/>
+                    <DataGridTemplateColumn Header="Schedule" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="6" Padding="6,3" HorizontalAlignment="Center"
+                                        Background="{Binding scheduleStatus, Converter={StaticResource ScheduleStatusToBackgroundKey}}">
+                                    <TextBlock Text="{Binding scheduleStatus, Converter={StaticResource ScheduleStatusToTextKey}}"
+                                               Foreground="White"
+                                               FontWeight="SemiBold"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
 
                     <DataGridTextColumn Header="Time Remaining"
-                                        Binding="{Binding TimeRemainingToComplete}"
-                                        Width="170"/>
+                                        Binding="{Binding TimeRemainingToComplete, Converter={StaticResource TimeSpanToReadableConverter}}"
+                                        Width="180"
+                                        ElementStyle="{StaticResource CenteredCell}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

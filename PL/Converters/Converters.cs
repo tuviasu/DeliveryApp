@@ -275,38 +275,75 @@ public class NullableToBoolConverter : IValueConverter
     }
 }
 
-/// <summary>
-/// Formats a TimeSpan into a compact, human-readable string.
-/// Negative spans (overdue) collapse to "00:00:00 (Overdue)" so the UI never
-/// shows raw negative TimeSpan dumps like "-458.16:01:58".
-/// Spans >= 1 day render as "2d 3h 15m"; shorter spans render as "hh:mm:ss".
-/// </summary>
 public class TimeSpanToReadableConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is TimeSpan ts)
+        if (value is not TimeSpan ts)
+            return value?.ToString() ?? string.Empty;
+
+        if (ts < TimeSpan.Zero)
         {
-            if (ts < TimeSpan.Zero)
-                return "00:00:00 (Overdue)";
-
-            if (ts.TotalDays >= 1)
-            {
-                int days = (int)ts.TotalDays;
-                int hours = ts.Hours;
-                int minutes = ts.Minutes;
-                return $"{days}d {hours}h {minutes}m";
-            }
-
-            return ts.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
+            var abs = ts.Negate();
+            if (abs.TotalDays >= 1)
+                return $"Overdue by {(int)abs.TotalDays}d {abs.Hours}h";
+            if (abs.TotalHours >= 1)
+                return $"Overdue by {(int)abs.TotalHours}h {abs.Minutes}m";
+            return $"Overdue by {(int)abs.TotalMinutes}m";
         }
 
-        return value?.ToString() ?? string.Empty;
+        if (ts.TotalMinutes < 1)
+            return "Due now";
+
+        if (ts.TotalDays >= 1)
+            return $"{(int)ts.TotalDays}d {ts.Hours}h remaining";
+
+        if (ts.TotalHours >= 1)
+            return $"{(int)ts.TotalHours}h {ts.Minutes}m remaining";
+
+        return $"{(int)ts.TotalMinutes}m remaining";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+public class ScheduleStatusToBackgroundConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        // One-way only.
-        throw new NotImplementedException();
+        if (value is BO.ScheduleStatus s)
+        {
+            return s switch
+            {
+                BO.ScheduleStatus.OnTime  => new SolidColorBrush(Color.FromRgb(0x16, 0xA3, 0x4A)), // green
+                BO.ScheduleStatus.InRisk  => new SolidColorBrush(Color.FromRgb(0xD9, 0x77, 0x06)), // amber
+                BO.ScheduleStatus.Late    => new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26)), // red
+                _                        => new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69))
+            };
+        }
+        return new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69));
     }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+public class ScheduleStatusToTextConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is BO.ScheduleStatus s)
+        {
+            return s switch
+            {
+                BO.ScheduleStatus.OnTime => "On Time",
+                BO.ScheduleStatus.InRisk => "Urgent",
+                BO.ScheduleStatus.Late   => "Overdue",
+                _                       => s.ToString()
+            };
+        }
+        return value?.ToString() ?? string.Empty;
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
 }

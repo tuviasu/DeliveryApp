@@ -146,11 +146,24 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="Order In Progress"
-                               Grid.ColumnSpan="2"
-                               FontSize="18"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,12"/>
+                    <DockPanel Grid.ColumnSpan="2" Margin="0,0,0,12">
+                        <TextBlock Text="Order In Progress"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   DockPanel.Dock="Left"/>
+                        <Border Margin="10,2,0,2"
+                                CornerRadius="6"
+                                Padding="8,3"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Background="{Binding CurrentCourier.orderInProgress.scheduleStatus, Converter={StaticResource ScheduleStatusToBackgroundKey}}"
+                                Visibility="{Binding CanFinishHandling, Converter={StaticResource BoolToVisibilityKey}}">
+                            <TextBlock Text="{Binding CurrentCourier.orderInProgress.scheduleStatus, Converter={StaticResource ScheduleStatusToTextKey}}"
+                                       Foreground="White"
+                                       FontWeight="SemiBold"
+                                       FontSize="12"/>
+                        </Border>
+                    </DockPanel>
 
                     <TextBlock Grid.Row="1" Text="Delivery ID"
                                Visibility="{Binding CanFinishHandling, Converter={StaticResource BoolToVisibilityKey}}"/>
@@ -203,12 +216,18 @@
                              IsReadOnly="True"
                              Visibility="{Binding CanFinishHandling, Converter={StaticResource BoolToVisibilityKey}}"/>
 
-                    <TextBlock Grid.Row="8" Text="Max By"
+                    <TextBlock Grid.Row="8" Text="Deadline (Max By)"
                                Visibility="{Binding CanFinishHandling, Converter={StaticResource BoolToVisibilityKey}}"/>
-                    <TextBox Grid.Row="8" Grid.Column="1"
-                             Text="{Binding CurrentCourier.orderInProgress.MaxDeliveryTime}"
-                             IsReadOnly="True"
-                             Visibility="{Binding CanFinishHandling, Converter={StaticResource BoolToVisibilityKey}}"/>
+                    <StackPanel Grid.Row="8" Grid.Column="1" Margin="0,8,0,0"
+                                Visibility="{Binding CanFinishHandling, Converter={StaticResource BoolToVisibilityKey}}">
+                        <TextBox Text="{Binding CurrentCourier.orderInProgress.MaxDeliveryTime}"
+                                 IsReadOnly="True"/>
+                        <TextBlock Text="{Binding CurrentCourier.orderInProgress.TimeRemainingToComplete, Converter={StaticResource TimeSpanToReadableConverter}}"
+                                   Foreground="{Binding CurrentCourier.orderInProgress.scheduleStatus, Converter={StaticResource ScheduleStatusToBackgroundKey}}"
+                                   FontWeight="SemiBold"
+                                   FontSize="12"
+                                   Margin="2,4,0,0"/>
+                    </StackPanel>
 
                     <StackPanel Grid.Row="9" Grid.ColumnSpan="2" Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal"

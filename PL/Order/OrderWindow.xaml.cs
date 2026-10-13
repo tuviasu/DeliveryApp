@@ -1,4 +1,4 @@
-﻿using BO;
+using BO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,6 +22,8 @@ namespace PL.Order
         private readonly DateTime _now;
 
         private bool _updatingOrder;
+        private bool _maxByManuallyChanged;
+        private bool _suppressMaxBySync;
 
         public OrderWindow(string requesterId = "0", int orderId = 0)
         {
@@ -37,12 +39,15 @@ namespace PL.Order
 
             if (OrderId == 0)
             {
+                // Add mode: default MaxBy = 7 days after now
                 int nextId = s_bl.Order.GetNextOrderId(_requesterId);
+                var defaultMaxBy = _now.AddDays(7);
+
                 CurrentOrder = new BO.Order
                 {
                     OrderID = nextId,
                     OrderOpenTime = _now,
-                    MaxDeliveryTime = _now.Add(_cfg.MaxDeliveryTimeRange),
+                    MaxDeliveryTime = defaultMaxBy,
                     OrderType = BO.OrderType.Individual,
                     PizzaSize = BO.DeviceType.Desktop,
                     FullAddress = "",
@@ -52,20 +57,25 @@ namespace PL.Order
                     DeliveriesForOrder = new()
                 };
 
-                // defaults for scheduled UI
                 ScheduledDate = _now.Date;
                 ScheduledTimeText = _now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+                SyncMaxByUiFrom(defaultMaxBy);
             }
             else
             {
+                // Edit mode: suppress auto-logic during load so saved values are preserved
+                _updatingOrder = true;
                 QueryOrder();
-
-                // defaults for scheduled UI when editing existing
                 if (CurrentOrder != null)
                 {
+                    SelectedOrderType = CurrentOrder.OrderType;
                     ScheduledDate = CurrentOrder.OrderOpenTime.Date;
                     ScheduledTimeText = CurrentOrder.OrderOpenTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+                    SyncMaxByUiFrom(CurrentOrder.MaxDeliveryTime);
+                    _maxByManuallyChanged = true; // treat saved value as locked; never auto-reset
                 }
+                _updatingOrder = false;
+                OnPropertyChanged(nameof(IsScheduled));
             }
 
             RefreshCanCancel();
@@ -125,17 +135,88 @@ namespace PL.Order
                 typeof(OrderWindow),
                 new PropertyMetadata("", (d, e) => ((OrderWindow)d).ApplyScheduledDateTimeToOrder()));
 
+        public DateTime MaxByDate
+        {
+            get => (DateTime)GetValue(MaxByDateProperty);
+            set => SetValue(MaxByDateProperty, value);
+        }
+
+        public static readonly DependencyProperty MaxByDateProperty =
+            DependencyProperty.Register(
+                nameof(MaxByDate),
+                typeof(DateTime),
+                typeof(OrderWindow),
+                new PropertyMetadata(DateTime.Today, (d, e) => ((OrderWindow)d).OnMaxByChanged()));
+
+        public string MaxByTimeText
+        {
+            get => (string)GetValue(MaxByTimeTextProperty);
+            set => SetValue(MaxByTimeTextProperty, value);
+        }
+
+        public static readonly DependencyProperty MaxByTimeTextProperty =
+            DependencyProperty.Register(
+                nameof(MaxByTimeText),
+                typeof(string),
+                typeof(OrderWindow),
+                new PropertyMetadata("00:00:00", (d, e) => ((OrderWindow)d).OnMaxByChanged()));
+
+        private void OnMaxByChanged()
+        {
+            if (_suppressMaxBySync)
+                return;
+
+            _maxByManuallyChanged = true;
+
+            if (CurrentOrder != null && TryParseMaxBy(out var maxBy))
+                CurrentOrder.MaxDeliveryTime = maxBy;
+        }
+
+        private bool TryParseMaxBy(out DateTime result)
+        {
+            result = default;
+            if (!TryParseTime(MaxByTimeText, out var timeOfDay))
+                return false;
+            result = MaxByDate.Date.Add(timeOfDay);
+            return true;
+        }
+
+        private void SyncMaxByUiFrom(DateTime maxBy)
+        {
+            _suppressMaxBySync = true;
+            try
+            {
+                MaxByDate = maxBy.Date;
+                MaxByTimeText = maxBy.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+            }
+            finally
+            {
+                _suppressMaxBySync = false;
+            }
+        }
+
+        private DateTime GetEffectiveMaxBy(DateTime autoDefault)
+        {
+            if (_maxByManuallyChanged && TryParseMaxBy(out var manual))
+                return manual;
+
+            SyncMaxByUiFrom(autoDefault);
+            return autoDefault;
+        }
+
         private void OnCurrentOrderChanged()
         {
             if (_updatingOrder)
                 return;
 
-            // Keep SelectedOrderType synced from model
             if (CurrentOrder != null)
             {
                 SelectedOrderType = CurrentOrder.OrderType;
                 ScheduledDate = CurrentOrder.OrderOpenTime.Date;
                 ScheduledTimeText = CurrentOrder.OrderOpenTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+
+                if (!_maxByManuallyChanged)
+                    SyncMaxByUiFrom(CurrentOrder.MaxDeliveryTime);
             }
 
             OnPropertyChanged(nameof(IsScheduled));
@@ -150,12 +231,10 @@ namespace PL.Order
             if (_updatingOrder)
                 return;
 
-            // Keep CurrentOrder.OrderType in sync with SelectedOrderType
             CurrentOrder.OrderType = SelectedOrderType;
 
             if (SelectedOrderType == BO.OrderType.Corporate)
             {
-                // Initialize defaults (today + now) if user just switched
                 if (ScheduledTimeText == "" || ScheduledDate == default)
                 {
                     ScheduledDate = _now.Date;
@@ -169,22 +248,19 @@ namespace PL.Order
 
         private void ApplyScheduledDateTimeToOrder()
         {
-            if (CurrentOrder == null)
-                return;
-
-            if (_updatingOrder)
+            if (CurrentOrder == null || _updatingOrder)
                 return;
 
             try
             {
                 _updatingOrder = true;
 
-                // For non-scheduled we keep "now" (system clock)
                 if (SelectedOrderType != BO.OrderType.Corporate)
                 {
                     if (ButtonText == "Add")
                     {
-                        var newOrder = new BO.Order
+                        var maxBy = GetEffectiveMaxBy(_now.AddDays(7));
+                        CurrentOrder = new BO.Order
                         {
                             OrderID = CurrentOrder.OrderID,
                             OrderType = SelectedOrderType,
@@ -194,12 +270,9 @@ namespace PL.Order
                             CustomerPhone = CurrentOrder.CustomerPhone,
                             Description = CurrentOrder.Description,
                             DeliveriesForOrder = CurrentOrder.DeliveriesForOrder,
-
                             OrderOpenTime = _now,
-                            MaxDeliveryTime = _now.Add(_cfg.MaxDeliveryTimeRange)
+                            MaxDeliveryTime = maxBy
                         };
-
-                        CurrentOrder = newOrder;
                     }
 
                     OnPropertyChanged(nameof(IsScheduled));
@@ -210,7 +283,7 @@ namespace PL.Order
                     return;
 
                 var start = ScheduledDate.Date.Add(timeOfDay);
-                var end = start.Add(_cfg.MaxDeliveryTimeRange);
+                var end = GetEffectiveMaxBy(start.AddDays(7));
 
                 CurrentOrder = new BO.Order
                 {
@@ -222,7 +295,6 @@ namespace PL.Order
                     CustomerPhone = CurrentOrder.CustomerPhone,
                     Description = CurrentOrder.Description,
                     DeliveriesForOrder = CurrentOrder.DeliveriesForOrder,
-
                     OrderOpenTime = start,
                     MaxDeliveryTime = end
                 };
@@ -241,7 +313,6 @@ namespace PL.Order
             if (string.IsNullOrWhiteSpace(text))
                 return false;
 
-            // Accept HH:mm:ss or HH:mm
             return TimeSpan.TryParseExact(text.Trim(), "hh\\:mm\\:ss", CultureInfo.InvariantCulture, out time)
                 || TimeSpan.TryParseExact(text.Trim(), "hh\\:mm", CultureInfo.InvariantCulture, out time)
                 || TimeSpan.TryParse(text.Trim(), CultureInfo.CurrentCulture, out time);
@@ -273,7 +344,6 @@ namespace PL.Order
                 return;
             }
 
-            // For new order (not saved yet) - no cancel.
             if (ButtonText == "Add")
             {
                 CanCancel = false;
@@ -291,7 +361,10 @@ namespace PL.Order
             // Ensure times are synced before saving
             ApplyScheduledDateTimeToOrder();
 
-            // Strict validation: reject invalid input before it reaches the BL.
+            // Sync MaxBy from UI to model (covers Individual Update mode where order isn't recreated)
+            if (TryParseMaxBy(out var finalMaxBy))
+                CurrentOrder.MaxDeliveryTime = finalMaxBy;
+
             var errors = ValidateOrder();
             if (errors.Count > 0)
             {
@@ -361,10 +434,6 @@ namespace PL.Order
             RefreshCanCancel();
         }
 
-        /// <summary>
-        /// Validates the current order's user-editable fields. Returns the list of
-        /// human-readable problems (empty = valid).
-        /// </summary>
         private List<string> ValidateOrder()
         {
             var errors = new List<string>();
@@ -373,8 +442,6 @@ namespace PL.Order
                 errors.Add("No order is loaded.");
                 return errors;
             }
-
-            // Order ID is now auto-assigned; no manual validation needed.
 
             if (string.IsNullOrWhiteSpace(CurrentOrder.CustomerFullName))
                 errors.Add("Customer name is required.");
@@ -386,10 +453,14 @@ namespace PL.Order
             if (string.IsNullOrWhiteSpace(CurrentOrder.FullAddress))
                 errors.Add("Address is required.");
 
-            // Scheduled (Corporate) orders need a valid time-of-day.
             if (SelectedOrderType == BO.OrderType.Corporate &&
                 !TryParseTime(ScheduledTimeText, out _))
                 errors.Add("Scheduled time must be HH:mm or HH:mm:ss.");
+
+            if (!TryParseMaxBy(out var maxBy))
+                errors.Add("Max By time is invalid. Use HH:mm or HH:mm:ss.");
+            else if (maxBy <= CurrentOrder.OrderOpenTime)
+                errors.Add("Max By must be after the Open Time.");
 
             return errors;
         }

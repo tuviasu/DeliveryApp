@@ -25,7 +25,8 @@ public record Order
     string? CustomerPhone,
     OrderType OrderType,
     DeviceType PizzaSize,
-    DateTime OrderOpeningTime
+    DateTime OrderOpeningTime,
+    DateTime? MaxDeliveryTime = null
 )
 {
 public Order():this(0, null, null, 0.0, 0.0, null, null, OrderType.Individual, DeviceType.Desktop, DateTime.MinValue) { }

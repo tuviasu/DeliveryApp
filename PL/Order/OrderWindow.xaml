@@ -102,11 +102,16 @@
                          Margin="0,6"
                          Visibility="{Binding IsScheduled, Converter={StaticResource InverseBoolToVisibilityKey}}"/>
 
-                <TextBox Grid.Column="1" Grid.Row="8"
-                         Text="{Binding CurrentOrder.MaxDeliveryTime, Converter={StaticResource ForceDataFormatKey}}"
-                         IsReadOnly="True"
-                         Margin="0,6"
-                         Visibility="{Binding IsScheduled, Converter={StaticResource InverseBoolToVisibilityKey}}"/>
+                <StackPanel Grid.Column="1" Grid.Row="8"
+                            Orientation="Horizontal"
+                            Margin="0,6"
+                            Visibility="{Binding IsScheduled, Converter={StaticResource InverseBoolToVisibilityKey}}">
+                    <DatePicker Width="130"
+                                SelectedDate="{Binding MaxByDate, Mode=TwoWay}"/>
+                    <TextBox Width="90"
+                             Margin="10,0,0,0"
+                             Text="{Binding MaxByTimeText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
+                </StackPanel>
 
                 <!-- Scheduled -->
                 <StackPanel Grid.Column="1" Grid.Row="7"
@@ -120,11 +125,16 @@
                              Text="{Binding ScheduledTimeText, Mode=TwoWay}"/>
                 </StackPanel>
 
-                <TextBox Grid.Column="1" Grid.Row="8"
-                         Text="{Binding CurrentOrder.MaxDeliveryTime, Converter={StaticResource ForceDataFormatKey}}"
-                         IsReadOnly="True"
-                         Margin="0,6"
-                         Visibility="{Binding IsScheduled, Converter={StaticResource BoolToVisibilityKey}}"/>
+                <StackPanel Grid.Column="1" Grid.Row="8"
+                            Orientation="Horizontal"
+                            Margin="0,6"
+                            Visibility="{Binding IsScheduled, Converter={StaticResource BoolToVisibilityKey}}">
+                    <DatePicker Width="130"
+                                SelectedDate="{Binding MaxByDate, Mode=TwoWay}"/>
+                    <TextBox Width="90"
+                             Margin="10,0,0,0"
+                             Text="{Binding MaxByTimeText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
+                </StackPanel>
 
                 <!-- Deliveries -->
                 <GroupBox Grid.Row="9"

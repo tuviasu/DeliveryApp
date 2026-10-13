@@ -67,7 +67,7 @@ public class Order
     /// <summary>
     /// Maximum allowed delivery time
     /// </summary>
-    public DateTime MaxDeliveryTime { get; init; }
+    public DateTime MaxDeliveryTime { get; set; }
 
     /// <summary>
     /// Current status of the order

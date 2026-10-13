@@ -30,7 +30,8 @@ internal class OrderImplementation : IOrder
             CustomerPhone: order.CustomerPhone,
             OrderType: (DO.OrderType)order.OrderType,
             PizzaSize: (DO.DeviceType)order.PizzaSize,
-            OrderOpeningTime: AdminManager.Now
+            OrderOpeningTime: AdminManager.Now,
+            MaxDeliveryTime: order.MaxDeliveryTime
         );
 
         OrderManager.AddOrder(doOrder);
@@ -245,7 +246,7 @@ internal class OrderImplementation : IOrder
         // Create tasks that compute the items including the network distance.
         var tasks = ordersList.Select(async o =>
         {
-            var maxDeliveryTime = o.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
+            var maxDeliveryTime = o.MaxDeliveryTime ?? o.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
             var timeRemaining = maxDeliveryTime - AdminManager.Now;
 
             var scheduleStatus = timeRemaining < TimeSpan.Zero
@@ -356,7 +357,7 @@ internal class OrderImplementation : IOrder
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var maxDeliveryTime = o.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
+            var maxDeliveryTime = o.MaxDeliveryTime ?? o.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
             var timeRemaining = maxDeliveryTime - AdminManager.Now;
 
             var scheduleStatus = timeRemaining < TimeSpan.Zero
@@ -449,7 +450,7 @@ internal class OrderImplementation : IOrder
                     ? 0
                     : OrderManager.CalculateDistance(companyLat, companyLon, o.Latitude, o.Longitude);
 
-                var maxDeliveryTime = o.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
+                var maxDeliveryTime = o.MaxDeliveryTime ?? o.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
                 var timeRemaining = maxDeliveryTime - AdminManager.Now;
 
                 var scheduleStatus = timeRemaining < TimeSpan.Zero
@@ -495,7 +496,7 @@ internal class OrderImplementation : IOrder
         var deliveries = DeliveryManager.GetDeliveriesByOrder(orderId);
         var config = AdminManager.GetConfig();
 
-        var maxDeliveryTime = doOrder.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
+        var maxDeliveryTime = doOrder.MaxDeliveryTime ?? doOrder.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
         var timeRemaining = maxDeliveryTime - AdminManager.Now;
 
         var lastDelivery = deliveries.OrderByDescending(d => d.DeliveryStartTime).FirstOrDefault();
@@ -573,7 +574,7 @@ internal class OrderImplementation : IOrder
             var deliveries = DeliveryManager.GetDeliveriesByOrder(o.OrderID);
             var lastDelivery = deliveries.OrderByDescending(d => d.DeliveryStartTime).FirstOrDefault();
 
-            var maxDeliveryTime = o.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
+            var maxDeliveryTime = o.MaxDeliveryTime ?? o.OrderOpeningTime.Add(config.MaxDeliveryTimeRange);
             var timeRemaining = maxDeliveryTime - AdminManager.Now;
 
             var scheduleStatus = timeRemaining < TimeSpan.Zero
@@ -741,7 +742,8 @@ internal class OrderImplementation : IOrder
             CustomerName = order.CustomerFullName,
             CustomerPhone = order.CustomerPhone,
             OrderType = (DO.OrderType)order.OrderType,
-            PizzaSize = (DO.DeviceType)order.PizzaSize
+            PizzaSize = (DO.DeviceType)order.PizzaSize,
+            MaxDeliveryTime = order.MaxDeliveryTime
         };
 
         OrderManager.UpdateOrder(updatedOrder);

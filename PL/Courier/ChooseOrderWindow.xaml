@@ -94,25 +94,26 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Order ID"
                                         Binding="{Binding OrderID}"
-                                        Width="110"
+                                        Width="0.8*"
                                         ElementStyle="{StaticResource CenteredCell}"/>
 
                     <DataGridTextColumn Header="Type"
                                         Binding="{Binding orderType}"
-                                        Width="130"
+                                        Width="*"
                                         ElementStyle="{StaticResource CenteredCell}"/>
 
                     <DataGridTextColumn Header="Address"
                                         Binding="{Binding FullAddress}"
-                                        Width="3*"
+                                        Width="2*"
+                                        MinWidth="160"
                                         ElementStyle="{StaticResource LeftCell}"/>
 
                     <DataGridTextColumn Header="Air Distance (km)"
                                         Binding="{Binding AirDistance, StringFormat={}{0:F2}}"
-                                        Width="160"
+                                        Width="*"
                                         ElementStyle="{StaticResource CenteredCell}"/>
 
-                    <DataGridTemplateColumn Header="Schedule" Width="140">
+                    <DataGridTemplateColumn Header="Schedule" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border CornerRadius="6" Padding="6,3" HorizontalAlignment="Center"
@@ -128,7 +129,7 @@
 
                     <DataGridTextColumn Header="Time Remaining"
                                         Binding="{Binding TimeRemainingToComplete, Converter={StaticResource TimeSpanToReadableConverter}}"
-                                        Width="180"
+                                        Width="1.4*"
                                         ElementStyle="{StaticResource CenteredCell}"/>
                 </DataGrid.Columns>
             </DataGrid>

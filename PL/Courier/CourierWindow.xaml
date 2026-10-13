@@ -97,6 +97,10 @@
                           ItemsSource="{Binding Source={StaticResource DeliveryTypeKey}}"
                           SelectedValue="{Binding CurrentCourier.DeliveryType, Mode=TwoWay}"
                           IsEnabled="{Binding ButtonText, Converter={StaticResource ConvertAddToFalseKey}}"/>
+                <TextBlock Grid.Column="1" Grid.Row="9" Margin="10,8,0,8"
+                           VerticalAlignment="Center" IsHitTestVisible="False"
+                           Text="Not Set" Foreground="#94A3B8"
+                           Visibility="{Binding CurrentCourier.DeliveryType, Converter={StaticResource NullToVisibilityConverter}, FallbackValue=Collapsed}"/>
                 <TextBox Grid.Column="1" Grid.Row="10" Margin="0,8" Style="{StaticResource AppTextBox}"
                          Text="{Binding CurrentCourier.DeliveredInTime}" IsReadOnly="True"/>
                 <TextBox Grid.Column="1" Grid.Row="11" Margin="0,8" Style="{StaticResource AppTextBox}"

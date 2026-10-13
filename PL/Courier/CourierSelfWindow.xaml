@@ -106,6 +106,10 @@
                               ItemsSource="{Binding Source={StaticResource DeliveryTypeKey}}"
                               SelectedValue="{Binding CurrentCourier.DeliveryType}"
                               IsEnabled="{Binding CanChooseOrder}"/>
+                    <TextBlock Grid.Row="8" Grid.Column="1" Margin="8,8,0,0"
+                               VerticalAlignment="Center" IsHitTestVisible="False"
+                               Text="Not Set" Foreground="#94A3B8"
+                               Visibility="{Binding CurrentCourier.DeliveryType, Converter={StaticResource NullToVisibilityConverter}, FallbackValue=Collapsed}"/>
 
                     <TextBlock Grid.Row="9" Text="Active" Margin="0,8,0,0"/>
                     <CheckBox Grid.Row="9" Grid.Column="1" Margin="0,8,0,0"

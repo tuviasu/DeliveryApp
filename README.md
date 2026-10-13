@@ -17,10 +17,11 @@
 </p>
 
 <p align="center">
-  <a href="#-download--quick-start">Download</a> ·
-  <a href="#-demo-login-credentials">Credentials</a> ·
-  <a href="#-screenshots">Screenshots</a> ·
-  <a href="#-architecture--design-patterns">Architecture</a>
+  <a href="#download--quick-start">Download</a> ·
+  <a href="#demo-login-credentials">Credentials</a> ·
+  <a href="#demo">Demo</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#architecture--design-patterns">Architecture</a>
 </p>
 
 ---
@@ -64,13 +65,23 @@
 
 ---
 
+## Demo
+
+<p align="center">
+  <a href="docs/assets/demo.mp4"><img src="docs/assets/demo.gif" alt="DeliveryApp demo: sign in, admin dashboard, orders, couriers and the courier workspace" width="900"></a>
+  <br>
+  <sub>▶ <a href="docs/assets/demo.mp4">Watch the full-quality video (MP4)</a></sub>
+</p>
+
+---
+
 ## Screenshots
 
 > Captured automatically from the running app with the bundled demo data (see [`screenshots/`](screenshots/) and the *Capture README screenshots* workflow).
 
 ### Sign in
 
-<p align="center"><img src="docs/assets/login.png" alt="Login screen" width="480"></p>
+<p align="center"><img src="docs/assets/login.png" alt="Login screen" width="760"></p>
 
 ### Admin
 

@@ -66,9 +66,31 @@
 
 ## Screenshots
 
-> Screenshots of the live application are pending capture. The screenshot folder structure is in place at `docs/screenshots/`. See [`docs/screenshots/SCREENSHOTS_PENDING.md`](docs/screenshots/SCREENSHOTS_PENDING.md) for capture instructions.
->
-> **To contribute screenshots:** run `DeliveryApp.exe`, capture each screen listed in the file above, and save PNGs to `docs/assets/`.
+> Captured automatically from the running app with the bundled demo data (see [`screenshots/`](screenshots/) and the *Capture README screenshots* workflow).
+
+### Sign in
+
+<p align="center"><img src="docs/assets/login.png" alt="Login screen" width="480"></p>
+
+### Admin
+
+| Management dashboard | Order management |
+|---|---|
+| <img src="docs/assets/admin-dashboard.png" alt="Admin dashboard"> | <img src="docs/assets/order-list.png" alt="Order list"> |
+
+| Order details | Add order (auto-assigned ID) |
+|---|---|
+| <img src="docs/assets/order-details.png" alt="Order details"> | <img src="docs/assets/order-add.png" alt="Add order"> |
+
+| Courier list | Courier details |
+|---|---|
+| <img src="docs/assets/courier-list.png" alt="Courier list"> | <img src="docs/assets/courier-details.png" alt="Courier details"> |
+
+### Courier
+
+| Courier dashboard | Choose an order | Delivery history |
+|---|---|---|
+| <img src="docs/assets/courier-dashboard.png" alt="Courier dashboard"> | <img src="docs/assets/choose-order.png" alt="Choose order"> | <img src="docs/assets/courier-history.png" alt="Delivery history"> |
 
 ---
 

@@ -34,9 +34,15 @@ jobs:
       run: dotnet build DeliveryApp.sln -c Release --no-restore
 
     # ── 4. Tests ───────────────────────────────────────────────────────────────
+    # The solution builds every project into bin\ (see BaseOutputPath), so run the
+    # test from there; `dotnet run --project` looks under \bin\ and never finds it.
+    # The test writes to the demo data, so restore xml\ before it is packaged.
     - name: Run integration tests
       run: |
-        dotnet run --project uitest/uitest.csproj -c Release --no-build 2>&1
+        & "$env:GITHUB_WORKSPACE\bin\uitest.exe" 2>&1
+        $code = $LASTEXITCODE
+        git checkout -- xml
+        exit $code
       continue-on-error: true
 
     # ── 5. Publish self-contained win-x64 app ─────────────────────────────────

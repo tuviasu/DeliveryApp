@@ -158,13 +158,35 @@
                                         Width="90"
                                         ElementStyle="{StaticResource CellCenterText}"/>
 
-                    <DataGridTextColumn Header="Remaining Time"
-                                        Binding="{Binding TimeRemainingToComplete, Converter={StaticResource TimeSpanToReadableConverter}}"
-                                        Width="170"
-                                        ElementStyle="{StaticResource CellCenterText}"/>
+                    <!-- Remaining time only means something while the order is still open. -->
+                    <DataGridTemplateColumn Header="Remaining Time"
+                                            Width="170">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource CellCenterText}">
+                                            <Setter Property="Text" Value="{Binding TimeRemainingToComplete, Converter={StaticResource TimeSpanToReadableConverter}}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding orderStatus}" Value="Delivered">
+                                                    <Setter Property="Text" Value="—"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding orderStatus}" Value="CustomerRefused">
+                                                    <Setter Property="Text" Value="—"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding orderStatus}" Value="Cancelled">
+                                                    <Setter Property="Text" Value="—"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
 
                     <DataGridTextColumn Header="Handling Time"
-                                        Binding="{Binding TotalHandlingTime, Converter={StaticResource TimeSpanToReadableConverter}}"
+                                        Binding="{Binding TotalHandlingTime, Converter={StaticResource TimeSpanToReadableConverter}, ConverterParameter=Duration}"
                                         Width="150"
                                         ElementStyle="{StaticResource CellCenterText}"/>
 

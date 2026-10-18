@@ -275,12 +275,28 @@ public class NullableToBoolConverter : IValueConverter
     }
 }
 
+/// <summary>
+/// Formats a TimeSpan for display. By default it is treated as time left until a deadline
+/// ("2d 5h remaining", "Overdue by 3h 10m", "Due now"). With ConverterParameter=Duration it is
+/// treated as an elapsed duration ("2d 11h 42m", "3h 14m", "19m").
+/// </summary>
 public class TimeSpanToReadableConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is not TimeSpan ts)
             return value?.ToString() ?? string.Empty;
+
+        if (parameter as string == "Duration")
+        {
+            if (ts < TimeSpan.Zero)
+                ts = TimeSpan.Zero;
+            if (ts.TotalDays >= 1)
+                return $"{(int)ts.TotalDays}d {ts.Hours}h {ts.Minutes}m";
+            if (ts.TotalHours >= 1)
+                return $"{(int)ts.TotalHours}h {ts.Minutes}m";
+            return $"{(int)ts.TotalMinutes}m";
+        }
 
         if (ts < TimeSpan.Zero)
         {

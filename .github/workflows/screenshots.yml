@@ -3,7 +3,7 @@ name: Capture README screenshots
 on:
   workflow_dispatch:
   push:
-    branches: [ "claude/admiring-rubin-sqfx88" ]
+    branches: [ "main" ]
     paths:
       - "screenshots/**"
       - "PL/**"

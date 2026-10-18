@@ -17,11 +17,21 @@
 </p>
 
 <p align="center">
+  <a href="#demo">Demo</a> ·
   <a href="#download--quick-start">Download</a> ·
   <a href="#demo-login-credentials">Credentials</a> ·
-  <a href="#demo">Demo</a> ·
   <a href="#screenshots">Screenshots</a> ·
   <a href="#architecture--design-patterns">Architecture</a>
+</p>
+
+---
+
+## Demo
+
+<p align="center">
+  <a href="docs/assets/demo.mp4"><img src="docs/assets/demo.gif" alt="DeliveryApp demo: sign in, admin dashboard, orders, couriers and the courier workspace" width="900"></a>
+  <br>
+  <sub>▶ <a href="docs/assets/demo.mp4">Watch the full-quality video (MP4)</a></sub>
 </p>
 
 ---
@@ -62,16 +72,6 @@
 3. Click **Sign In** — the app automatically routes you to the correct screen based on your role.
 
 > Both roles are fully operational. The Admin role provides full management capability. The Courier role provides a focused personal workspace for picking up and completing deliveries.
-
----
-
-## Demo
-
-<p align="center">
-  <a href="docs/assets/demo.mp4"><img src="docs/assets/demo.gif" alt="DeliveryApp demo: sign in, admin dashboard, orders, couriers and the courier workspace" width="900"></a>
-  <br>
-  <sub>▶ <a href="docs/assets/demo.mp4">Watch the full-quality video (MP4)</a></sub>
-</p>
 
 ---
 
@@ -218,9 +218,10 @@ Edit `xml/dal-config.xml`:
 
 ### 5. Run tests
 ```bash
-dotnet run --project uitest/uitest.csproj
+dotnet build DeliveryApp.sln
+bin/uitest.exe
 ```
-Prints `ALL TESTS OK.` on success.
+Prints `ALL TESTS OK.` on success. The test writes to the demo data, so run `git checkout -- xml` afterwards to restore it.
 
 ---
 
@@ -260,7 +261,8 @@ DeliveryApp/
 ├── DalTest/                # Interactive DAL test console
 ├── BITest/                 # Integration tests
 ├── uitest/                 # Headless UI + BL integration harness
-├── docs/                   # Screenshots and documentation
+├── docs/assets/            # README screenshots, demo GIF/MP4, social preview
+├── screenshots/            # Tool that captures the screenshots & demo video (runs in CI)
 ├── xml/                    # Runtime / seed data files
 └── DeliveryApp.sln
 ```
@@ -270,6 +272,11 @@ DeliveryApp/
 ## Changelog
 
 ### Latest (current)
+- Animated demo video and framed screenshots in the README, captured automatically from the real app by CI.
+- Courier screens: readable distances and remaining times, schedule badges, full-width address column, "Not Set" delivery type.
+- Order list: handling time shown as a duration; remaining time hidden on closed orders.
+- One date/time format across the app (dd/MM/yyyy, 24h).
+- CI now actually runs the UI + BL integration test.
 - Single permanent GitHub Release — always the latest build at the same URL.
 - Both login roles (Admin and Courier) verified and documented.
 - Demo credentials displayed publicly in README and Release description.

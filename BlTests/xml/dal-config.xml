@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Test-only DAL config: use the in-memory DalList so tests never touch the real xml\ data files. -->
+<config>
+	<dal>list</dal>
+	<dal-packages>
+		<list>DalList</list>
+		<xml>DalXml</xml>
+	</dal-packages>
+</config>

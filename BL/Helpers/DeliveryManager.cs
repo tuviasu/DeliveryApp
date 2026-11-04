@@ -225,4 +225,98 @@ internal static class DeliveryManager
         return filter != null ? deliveries.Count(filter) : deliveries.Count();
     }
 
+    #region Order availability / assignment
+
+    /// <summary>
+    /// Whether an order can be handed to a courier, derived from its delivery attempts.
+    /// </summary>
+    internal enum OrderAvailability
+    {
+        /// <summary>No attempt yet, or every attempt ended Failed / CustomerNotFound.</summary>
+        Available,
+        /// <summary>An attempt is still running (no done time) - nobody else may take it.</summary>
+        InProgress,
+        /// <summary>An attempt ended Completed - the order is closed.</summary>
+        Delivered,
+        /// <summary>An attempt ended CustomerRefused - the order is closed.</summary>
+        CustomerRefused,
+        /// <summary>The order was cancelled - it must never be re-assigned.</summary>
+        Cancelled
+    }
+
+    /// <summary>
+    /// Single source of truth for "is this order open for a courier?".
+    /// Looks at ALL attempts (not only the last one), so a delivered or cancelled order can
+    /// never become available again, regardless of how attempts are ordered by time or ID.
+    /// </summary>
+    internal static OrderAvailability GetOrderAvailability(IEnumerable<DO.Delivery> deliveriesOfOrder)
+    {
+        var list = deliveriesOfOrder as IReadOnlyCollection<DO.Delivery> ?? deliveriesOfOrder.ToList();
+
+        if (list.Any(d => d.DeliveryDoneTime == null))
+            return OrderAvailability.InProgress;
+        if (list.Any(d => d.DeliveryDoneType == DO.ProcessResult.Cancelled))
+            return OrderAvailability.Cancelled;
+        if (list.Any(d => d.DeliveryDoneType == DO.ProcessResult.Completed))
+            return OrderAvailability.Delivered;
+        if (list.Any(d => d.DeliveryDoneType == DO.ProcessResult.CustomerRefused))
+            return OrderAvailability.CustomerRefused;
+
+        // No attempts, or only Failed / CustomerNotFound (or a closed attempt with no result) -> may be retried.
+        return OrderAvailability.Available;
+    }
+
+    /// <summary>
+    /// Atomically checks that the courier is free and the order is available, and creates the
+    /// new delivery attempt - all under one lock, so two couriers can never take the same order
+    /// (and one courier can never take two orders) even when requests arrive concurrently.
+    /// Previous attempts are never modified, so the full attempt history is preserved.
+    /// </summary>
+    /// <param name="failureReason">Why the assignment was refused, when it returns false.</param>
+    /// <returns>true if the delivery was created.</returns>
+    internal static bool TryAssignOrderToCourier(int orderId, int courierId, out string? failureReason)
+    {
+        lock (AdminManager.BlMutex) //stage 7
+        {
+            if (s_dal.Delivery.ReadAll(d => d.CourierID == courierId && d.DeliveryDoneTime == null).Any())
+            {
+                failureReason = $"Courier {courierId} is already handling another order";
+                return false;
+            }
+
+            var availability = GetOrderAvailability(s_dal.Delivery.ReadAll(d => d.OrderID == orderId).ToList());
+            if (availability != OrderAvailability.Available)
+            {
+                failureReason = availability switch
+                {
+                    OrderAvailability.InProgress => $"Order {orderId} is already being delivered by another courier",
+                    OrderAvailability.Delivered => $"Order {orderId} was already delivered and is closed",
+                    OrderAvailability.CustomerRefused => $"Order {orderId} was refused by the customer and is closed",
+                    OrderAvailability.Cancelled => $"Order {orderId} was cancelled and cannot be assigned",
+                    _ => $"Order {orderId} is not available"
+                };
+                return false;
+            }
+
+            s_dal.Delivery.Create(new DO.Delivery(
+                DeliveryID: 0,
+                OrderID: orderId,
+                CourierID: courierId,
+                DeliveryType: DO.DeliveryType.Regular,
+                DeliveryStartTime: AdminManager.Now,
+                DeliveryDistance: null,
+                DeliveryDoneType: null,
+                DeliveryDoneTime: null));
+        }
+
+        failureReason = null;
+
+        // Notify outside the lock (observers may call back into the BL).
+        Observers.NotifyListUpdated(); //stage 5
+        CourierManager.Observers.NotifyItemUpdated(courierId);
+        CourierManager.Observers.NotifyListUpdated();
+        return true;
+    }
+
+    #endregion
 }

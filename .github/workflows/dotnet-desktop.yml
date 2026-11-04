@@ -34,6 +34,10 @@ jobs:
       run: dotnet build DeliveryApp.sln -c Release --no-restore
 
     # ── 4. Tests ───────────────────────────────────────────────────────────────
+    # BL unit tests run on the in-memory DalList, so they never touch xml\.
+    - name: Run BL unit tests
+      run: dotnet test BlTests/BlTests.csproj -c Release --no-build
+
     # The solution builds every project into bin\ (see BaseOutputPath), so run the
     # test from there; `dotnet run --project` looks under \bin\ and never finds it.
     # The test writes to the demo data, so restore xml\ before it is packaged.

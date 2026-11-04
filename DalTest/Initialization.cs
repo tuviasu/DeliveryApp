@@ -166,20 +166,32 @@ public static class Initialization
 
         foreach (var order in orders)
         {
+            // Attempts for one order are sequential: each starts after the previous one ended.
+            // Only the LAST attempt may close the order (Completed / Cancelled / CustomerRefused);
+            // earlier attempts are retries (Failed / CustomerNotFound). This keeps the history
+            // realistic - a delivered order never has a second, overlapping courier.
             int deliveriesForOrder = s_rand.Next(1, 3);
+            DateTime nextStart = order.OrderOpeningTime.AddMinutes(s_rand.Next(10, 120));
 
             for (int i = 0; i < deliveriesForOrder; i++)
             {
                 Courier courier = couriers[s_rand.Next(couriers.Count)];
+                bool isLast = i == deliveriesForOrder - 1;
 
-                ProcessResult doneType = PickByProbability(new[]
-                {
-                    (ProcessResult.Completed, 60),
-                    (ProcessResult.Failed, 15),
-                    (ProcessResult.CustomerNotFound, 10),
-                    (ProcessResult.Cancelled, 10),
-                    (ProcessResult.CustomerRefused, 5)
-                });
+                ProcessResult doneType = isLast
+                    ? PickByProbability(new[]
+                    {
+                        (ProcessResult.Completed, 60),
+                        (ProcessResult.Failed, 15),
+                        (ProcessResult.CustomerNotFound, 10),
+                        (ProcessResult.Cancelled, 10),
+                        (ProcessResult.CustomerRefused, 5)
+                    })
+                    : PickByProbability(new[]
+                    {
+                        (ProcessResult.Failed, 60),
+                        (ProcessResult.CustomerNotFound, 40)
+                    });
 
                 DeliveryType deliveryType = PickByProbability(new[]
                 {
@@ -187,8 +199,9 @@ public static class Initialization
                     (DeliveryType.Express, 30)
                 });
 
-                DateTime start = order.OrderOpeningTime.AddMinutes(
-                    s_rand.Next(10, 120));
+                DateTime start = nextStart;
+                DateTime end = start.AddMinutes(s_rand.Next(15, 90));
+                nextStart = end.AddMinutes(s_rand.Next(5, 60));
 
                 Delivery delivery = new Delivery(
                     DeliveryID: s_nextDeliveryId++,
@@ -200,9 +213,7 @@ public static class Initialization
                         ? s_rand.NextDouble() * 20
                         : null,
                     DeliveryDoneType: doneType,
-                    DeliveryDoneTime: doneType == ProcessResult.Completed
-                        ? start.AddMinutes(s_rand.Next(15, 90))
-                        : null
+                    DeliveryDoneTime: end   // every seeded attempt is finished; none is left "in progress"
                 );
 
                 s_dal.Delivery.Create(delivery);

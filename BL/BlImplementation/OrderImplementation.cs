@@ -46,6 +46,14 @@ internal class OrderImplementation : IOrder
 
         var lastDelivery = DeliveryManager.GetLastDeliveryForOrder(orderId);
 
+        // A closed order (delivered / refused / already cancelled) cannot be cancelled:
+        // that would rewrite its final status and its history.
+        var availability = DeliveryManager.GetOrderAvailability(DeliveryManager.GetDeliveriesByOrder(orderId));
+        if (availability is DeliveryManager.OrderAvailability.Delivered
+                         or DeliveryManager.OrderAvailability.CustomerRefused
+                         or DeliveryManager.OrderAvailability.Cancelled)
+            throw new BlOperationNotAllowedException($"Order {orderId} is already closed ({availability}) and cannot be cancelled");
+
         // Case 1: order is currently being delivered -> close the current delivery
         if (lastDelivery != null && lastDelivery.DeliveryDoneTime == null)
         {
@@ -113,11 +121,9 @@ internal class OrderImplementation : IOrder
 
         DeliveryManager.UpdateDelivery(updatedDelivery);
 
-        // Spec-specific behavior:
-        // - CustomerNotFound: close current delivery but order should become available again.
-        // - Failed: close current delivery but order stays open.
-        // In this codebase, "open" means: last delivery is completed and NOT Cancelled.
-        // Therefore both cases work automatically for selection logic.
+        // Availability rule (DeliveryManager.GetOrderAvailability):
+        // - Completed / CustomerRefused / Cancelled -> order is closed and never offered again.
+        // - Failed / CustomerNotFound              -> order becomes available for a new attempt.
 
         OrderManager.Observers.NotifyItemUpdated(delivery.OrderID);
         OrderManager.Observers.NotifyListUpdated();
@@ -208,24 +214,9 @@ internal class OrderImplementation : IOrder
         if (!CourierManager.IsCourierExists(courierIdInt))
             throw new BlItemNotFoundException($"Courier with ID {courierId} not found", null);
 
-        // Only orders that are currently available to be taken:
-        // - No deliveries yet
-        // - OR last delivery is completed AND was not a cancellation
-        var openOrders = OrderManager.GetAllOrders()
-            .Where(o =>
-            {
-                var lastDelivery = DeliveryManager.GetLastDeliveryForOrder(o.OrderID);
-                if (lastDelivery == null)
-                    return true;
-
-                if (lastDelivery.DeliveryDoneTime == null)
-                    return false; // already in progress
-
-                if (lastDelivery.DeliveryDoneType == DO.ProcessResult.Cancelled)
-                    return false;
-
-                return true;
-            });
+        // Only orders that are currently available to be taken (see DeliveryManager.GetOrderAvailability):
+        // never delivered / refused / cancelled, and no attempt currently in progress.
+        IEnumerable<DO.Order> openOrders = GetAvailableOrders();
 
         if (orderTypeFilter.HasValue)
             openOrders = openOrders.Where(o => (BO.OrderType)o.OrderType == orderTypeFilter.Value);
@@ -313,21 +304,9 @@ internal class OrderImplementation : IOrder
         if (!CourierManager.IsCourierExists(courierIdInt))
             throw new BlItemNotFoundException($"Courier with ID {courierId} not found", null);
 
-        var openOrders = OrderManager.GetAllOrders()
-            .Where(o =>
-            {
-                var lastDelivery = DeliveryManager.GetLastDeliveryForOrder(o.OrderID);
-                if (lastDelivery == null)
-                    return true;
-
-                if (lastDelivery.DeliveryDoneTime == null)
-                    return false;
-
-                if (lastDelivery.DeliveryDoneType == DO.ProcessResult.Cancelled)
-                    return false;
-
-                return true;
-            });
+        // Only orders that are currently available to be taken (see DeliveryManager.GetOrderAvailability):
+        // never delivered / refused / cancelled, and no attempt currently in progress.
+        IEnumerable<DO.Order> openOrders = GetAvailableOrders();
 
         if (orderTypeFilter.HasValue)
             openOrders = openOrders.Where(o => (BO.OrderType)o.OrderType == orderTypeFilter.Value);
@@ -396,6 +375,23 @@ internal class OrderImplementation : IOrder
         }
     }
 
+    /// <summary>
+    /// Orders a courier may pick right now. Uses one snapshot of orders and deliveries
+    /// (no per-order lock round-trips) and the shared rule in DeliveryManager.GetOrderAvailability:
+    /// Completed / CustomerRefused / Cancelled close the order; Failed / CustomerNotFound let it be retried;
+    /// an attempt in progress blocks everyone else.
+    /// </summary>
+    private static List<DO.Order> GetAvailableOrders()
+    {
+        var allOrders = OrderManager.GetAllOrders().ToList();
+        var deliveriesByOrder = DeliveryManager.GetAllDeliveries().ToLookup(d => d.OrderID);
+
+        return allOrders
+            .Where(o => DeliveryManager.GetOrderAvailability(deliveriesByOrder[o.OrderID])
+                        == DeliveryManager.OrderAvailability.Available)
+            .ToList();
+    }
+
     public IEnumerable<OpenOrderInList> GetOpenOrdersForCourier(string requesterId, string courierId, OrderType? orderTypeFilter, OpenOrderListSortProperty? sortProperty)
     {
         if (!int.TryParse(courierId, out int courierIdInt))
@@ -404,31 +400,9 @@ internal class OrderImplementation : IOrder
         if (!CourierManager.IsCourierExists(courierIdInt))
             throw new BlItemNotFoundException($"Courier with ID {courierId} not found", null);
 
-        // Fetch all required data under a single lock, then work on in-memory snapshots
-        // to avoid O(N×M) repeated lock acquisitions inside LINQ predicates.
-        var allOrders = OrderManager.GetAllOrders().ToList();
-        var allDeliveries = DeliveryManager.GetAllDeliveries().ToList();
-
-        // Build a lookup: orderId -> last delivery (by start time)
-        var lastDeliveryByOrder = allDeliveries
-            .GroupBy(d => d.OrderID)
-            .ToDictionary(
-                g => g.Key,
-                g => g.OrderByDescending(d => d.DeliveryStartTime).First());
-
-        var openOrders = allOrders.Where(o =>
-        {
-            if (!lastDeliveryByOrder.TryGetValue(o.OrderID, out var lastDelivery))
-                return true; // no deliveries yet
-
-            if (lastDelivery.DeliveryDoneTime == null)
-                return false; // already in progress
-
-            if (lastDelivery.DeliveryDoneType == DO.ProcessResult.Cancelled)
-                return false;
-
-            return true;
-        });
+        // Only orders that are currently available to be taken (see DeliveryManager.GetOrderAvailability):
+        // never delivered / refused / cancelled, and no attempt currently in progress.
+        IEnumerable<DO.Order> openOrders = GetAvailableOrders();
 
         if (orderTypeFilter.HasValue)
             openOrders = openOrders.Where(o => (BO.OrderType)o.OrderType == orderTypeFilter.Value);
@@ -702,25 +676,11 @@ internal class OrderImplementation : IOrder
         if (!OrderManager.IsOrderExists(orderId))
             throw new BlItemNotFoundException($"Order with ID {orderId} not found", null);
 
-        if (DeliveryManager.IsCourierCurrentlyDelivering(courierIdInt))
-            throw new BlInvalidIdException($"Courier {courierId} is already handling another order", null);
+        // Check-and-create is done atomically inside DeliveryManager (single lock), so two couriers
+        // racing for the same order cannot both succeed, and closed orders are never re-assigned.
+        if (!DeliveryManager.TryAssignOrderToCourier(orderId, courierIdInt, out var reason))
+            throw new BlInvalidIdException(reason ?? $"Order {orderId} is not available", null);
 
-        var lastDelivery = DeliveryManager.GetLastDeliveryForOrder(orderId);
-        if (lastDelivery != null && lastDelivery.DeliveryDoneTime == null)
-            throw new BlInvalidIdException($"Order {orderId} is already being delivered", null);
-
-        var newDelivery = new DO.Delivery(
-            DeliveryID: 0,
-            OrderID: orderId,
-            CourierID: courierIdInt,
-            DeliveryType: DO.DeliveryType.Regular,
-            DeliveryStartTime: AdminManager.Now,
-            DeliveryDistance: null,
-            DeliveryDoneType: null,
-            DeliveryDoneTime: null
-        );
-
-        DeliveryManager.AddDelivery(newDelivery);
         OrderManager.Observers.NotifyItemUpdated(orderId);
         OrderManager.Observers.NotifyListUpdated();
     }

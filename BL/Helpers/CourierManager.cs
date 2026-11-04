@@ -146,38 +146,10 @@ internal static class CourierManager
 
                     var chosen = openOrders[s_rand.Next(openOrders.Count)];
                     int chosenOrderId = chosen.OrderID;
-                    bool created = false;
 
-                    // Re-validate courier and order state inside the same lock used to create
-                    // the delivery, eliminating the race window between validation and creation.
-                    lock (AdminManager.BlMutex)
-                    {
-                        bool courierFree = !s_dal.Delivery
-                            .ReadAll(d => d.CourierID == courier.CourierID && d.DeliveryDoneTime == null)
-                            .Any();
-
-                        var lastForOrder = s_dal.Delivery
-                            .ReadAll(d => d.OrderID == chosenOrderId)
-                            .OrderByDescending(d => d.DeliveryID)
-                            .FirstOrDefault();
-                        bool orderFree = lastForOrder == null || lastForOrder.DeliveryDoneTime != null;
-
-                        if (courierFree && orderFree)
-                        {
-                            DO.Delivery newDelivery = new(
-                                DeliveryID: 0,
-                                OrderID: chosenOrderId,
-                                CourierID: courier.CourierID,
-                                DeliveryType: DO.DeliveryType.Regular,
-                                DeliveryStartTime: AdminManager.Now,
-                                DeliveryDistance: null,
-                                DeliveryDoneType: null,
-                                DeliveryDoneTime: null);
-
-                            s_dal.Delivery.Create(newDelivery);
-                            created = true;
-                        }
-                    }
+                    // Re-validate and create atomically via the same rule used by manual selection,
+                    // so the simulator can never assign an in-progress, delivered or cancelled order.
+                    bool created = DeliveryManager.TryAssignOrderToCourier(chosenOrderId, courier.CourierID, out _);
 
                     if (created)
                     {
